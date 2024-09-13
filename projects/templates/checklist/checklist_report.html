@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load static %}
+{% block report_active %}active{% endblock %}
+
+{% block title %}Report{% endblock %}
+
+{% block main-content %}
+
+<div class="row ">
+    <div class="col-12 col-lg-12 border-bottom px-2 py-1 mb-1 d-flex justify-content-between ">
+        <h6>Project: <strong>{{project.name|title}}</strong></h6>
+        <button class="btn btn-secondary btn-sm mb-1" onclick="goBack()"> Back </button>
+    </div>
+</div>
+<!-- date_rise_form DATA -->
+<div class="container" id="hidden_div">
+  <div class="row">
+    <div class="col-md-1 float-end">
+      <button class="btn btn-secondary btn-sm mb-1" onclick="print_form('print_form')"> Print <i class="bi bi-printer-fill"></i> </button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <!-- form print -->
+      <form id="print_form">
+        <!-- page border -->
+        <div style="border: 1px solid black; padding: 0.5cm;">
+          <!-- Header -->
+          <table style="width: 100%; text-align: center; margin-bottom: 0.5cm; border-bottom: 1px solid black;">
+            <tr>
+              <td style="width: 20%;"><img src="{% static 'assets/img/icpro.png' %}" height="42px" width="120px">
+              </td>
+              <td style="width: 60%;">
+                <h4 id="header"></h4>
+              </td>
+              <td class="text-start" style="width: 40%;">
+                Date : <span id="demo_date"></span> <br>
+                Time : <span id="demo_time"></span>
+              </td>
+            </tr>
+          </table>
+
+          <!-- checklist table data -->
+          
+            <div>
+                <h4><strong>Project Name: {{project.name|title}}</strong></h4>
+            </div>
+            {% if project.checklists.all|length > 0%}
+              {% for checklist in project.checklists.all %}
+                <div>
+                  <h6><strong>Checklist Name: {{checklist.name|title}}</strong></h6>
+                </div>
+                {% if checklist.section.all|length > 0 %}
+                    {% for section in checklist.section.all%}
+                        <div>
+                            <h6><strong>Section Name: {{section.name|title}}</strong></h6>
+                        </div>
+                        {% if section.question.all|length > 0 %}
+                            <table class="custom-table mb-4" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Q.No</th>
+                                            <th>Question</th>
+                                            {% comment %} <th> Type </th> {% endcomment %}
+                                            <th>Answer</th>
+                                            <th>Remarks</th>
+                                        </tr>
+                                    </thead>
+                                {% endif %}
+                                    <!-- <tbody id="json_data"></tbody> -->
+                                {% if section.question.all|length > 0 %}
+                                    <tbody>
+                                        {% for question in section.question.all %} 
+                                            <tr>
+                                                <td style="border: 1px solid black;">{{forloop.counter}}</td>
+                                                <td style="border: 1px solid black;">{{question.question|capfirst}}</td>
+                                                {% comment %} <td style="border: 1px solid black;">{{question.type}}</td> {% endcomment %}
+                                                {% for answer in answers %}
+                                                    {% if answer.checklist.id == checklist.id and answer.section.id == section.id and answer.question.id == question.id %}
+                                                        <td style="border: 1px solid black;">{{answer.text|default:"Not Answered"}}</td>
+                                                        {% if question.type == 'text'%}
+                                                        <td style="border: 1px solid black;">{{answer.remarks|default:"NA"}}</td>
+                                                        {% else %}
+                                                        <td style="border: 1px solid black;">{{answer.remarks|default:"Not Answered"}}</td>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                            </table>
+                        {% else %}
+                            <div class="mb-4">
+                                <h6> No Question(s) present in this section </h6>
+                            </div>  
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="mb-4">
+                        <h6>No Section(s) found in this checklist </h6>
+                    </div>
+                {% endif %}
+              {% endfor %} 
+            {% else %}
+                <div class="mb-4">
+                    <h4>No Checklist(s) added to this project</h5>
+                </div>
+            {% endif %}
+          </table>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- Resubmission Disable  -->
+<script>
+  if ( window.history.replaceState ) { window.history.replaceState( null, null, window.location.href );}
+</script>
+
+<!-- script related to print form data -->
+<script>
+  function print_form(print_form) {
+    var printdata = document.getElementById(print_form);
+    var w = window.open();
+    w.document.write('<html><head><title></title>');
+    w.document.write('<link rel="stylesheet" type="text/css" href="../../static/bootstrap-5.1.3/css/bootstrap.css">');
+    w.document.write('</head><body >');
+    w.document.write(printdata.outerHTML);
+    w.document.write('</body></html>');
+    w.print();
+    w.close();
+  }
+</script>
+
+<!-- current date and time -->
+<script>
+  setInterval(myTimer, 1000);
+  function myTimer() {
+    const date = new Date();
+    document.getElementById("demo_date").innerHTML = date.toLocaleDateString();
+    document.getElementById("demo_time").innerHTML = date.toLocaleTimeString();
+  }
+</script>
+
+<script>
+function goBack() {
+  window.history.back();
+}
+</script>
+
+{% endblock %}
+

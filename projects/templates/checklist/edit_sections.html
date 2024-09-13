@@ -1,0 +1,522 @@
+{% extends "checklist/checklist_base.html" %}
+
+{% block checklist_view %}
+    <div class="row">
+        <div class="col-12 col-lg-12 border-bottom px-2 py-1 mb-1">
+            <div class="d-flex"> 
+                <div> <h6><a style="color:rgb(9, 139, 172);" href="/projects/list-checklist" >Checklists </a>-> {{current_checklist.name|capfirst}}</h6> </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block sections_view %}
+    <div class="list-group list-group-flush"> 
+        {% for section in sel_sections %}
+            {% if section.id == current_section.id%}
+            <div id={{section.id}} class="d-flex justify-content-between list-group-item px-0 py-1 ">
+                <a style="color:rgb(9, 139, 172);" href="{{section.id}}" class="section_name"><i class="bx-folder "></i><span>{{section.name|title}}</span></a>
+                <div class="d-flex justify-content-between  px-1 ">
+                <a href="" data-bs-toggle="modal" data-bs-target="#Edit_Section_name_Modal" style="color:rgb(9, 139, 172);"><i class="fas fa-edit px-0"></i></a>
+                <div class="vr mx-1"></div>
+                <a href="/projects/checklist/delete-section/{{current_checklist.id}}/{{current_section.id}}" id="delete_section" onclick="return confirm('Delete \'{{current_section.name|capfirst}}\' ? ')" ><i class="fas fa-trash" style="color: red;"></i></a>
+                </div>                                     
+            </div>
+            {% else %}
+            <div id={{section.id}} class="d-flex justify-content-between list-group-item  px-0 py-1">
+                <a style="color:rgb(0, 0, 0);" href="{{section.id}}" class=""><i class="bx-folder "></i><span>{{section.name|title}}</span></a>
+            </div>
+            {% endif %}
+            
+        {% endfor %}
+    </div>
+
+
+{% endblock %}
+{% block question_view %}
+    <table class="dataTable display nowrap compact cell-border" style="width:100%;">
+        <thead>
+            <tr><th>No</th>
+                <th>Question</th>
+                <th>Options/Field</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            
+            </tr>
+        </thead>
+        <tbody>
+            
+                {% for question in sel_questions %}
+                    <tr id="{{question.id}}" >
+                      
+                            <!--Section: Contact v.2-->
+                            <section class="pb-1">
+
+                                <!--Section heading-->
+                            
+                            <td>{{forloop.counter}}</td>
+                            <td>
+                                <h6 id="{{question.id}}" class="h5-responsive font-weight-bold ">{{question.question|capfirst}} 
+                                {% if question.attachment %}
+                                <span>
+                                <a style="color:rgb(9, 139, 172);" href="/projects/checklist/attachment/{{question.id}}/">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-paperclip" viewBox="0 0 16 16">
+                                    <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
+                                    </svg>
+                                </a>
+                                </span>
+                                {% endif%}
+                                </h6>
+                            </td>
+                                <div class="row">
+
+                                    <!--Grid column-->
+                                    <div class="col-md-9 mb-md-0 mb-2">
+                                        <form id="question-form" name="question-form" >
+                                            <!--Grid row-->
+                                            <div class="row">
+                                                <!--Grid column-->
+                                                <div class="col-md-6">
+                                                    <div class="md-form mb-0">
+                                                        {% if question.type == 'text'%}
+                                                        <td>
+                                                        <div class="md-form mb-2">
+                                                            <!-- <input type="{{question.type}}" id="s{{section.id}}-q{{question.id}}-o{{option.id}}" name="{{option.option}}" value="{{option.option}}" readonly> -->
+                            
+                                                            <h6>Text Field</h6>
+                                                        </div>
+                                                        </td>
+                                                        
+                                                        {% else %}
+                                                        <td>
+                                                        <div class="md-form mb-2">
+                                                            {% for option in question.options.all %}
+                                                                <input type="{{question.type}}" id="s{{section.id}}-q{{question.id}}-o{{option.id}}" name="{{option.option}}" value="{{option.option}}" disabled>
+                                                                <label for="html">{{option.option}}</label><br>
+                                                                
+                                                            {% endfor%}
+                                                        
+                                                        </td>
+                                                        {% comment %} <td style="text-align: center;">
+                                                            <!-- <label for="html">Remarks</label><br>
+                                                            <input type="text" id="s{{section.id}}-q{{question.id}}-o{{option.id}}" name="remarks"  readonly>
+                                                             -->
+                                                             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-check align-center" viewBox="0 0 16 16">
+                                                                <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                                                              </svg> {% endcomment %}
+                                                    
+                                                    
+                                                        {% endif %}
+                                                        {% if user.groups.all.0.name == 'Admin' %}
+                                                        <td style="text-align: center;"><a href="" id="edit_qustion_a" data-bs-toggle="modal" data-bs-target="#Edit_Question_Modal" style="color:rgb(9, 139, 172);"><i class="edit-question-row fas fa-edit"></i></a></td>
+
+                                                        <td style="text-align: center;"><a href="/projects/checklist/delete-question/{{current_checklist.id}}/{{current_section.id}}/{{question.id}}" id="delete_question" onclick="return confirm('Delete \'{{question.question|capfirst}}\' ? ')" ><i class="fas fa-trash" style="color: red;"></i></a></td>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                        
+                                    </div>
+                                    <!--Grid column-->
+                                </div>
+
+                            </section>
+                            <!--Section: Contact v.2-->
+                        </td>
+                    </tr>
+                
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+<!-- Edit Question   -->
+<div class="modal fade" id="Edit_Question_Modal" tabindex="-1" aria-labelledby="Edit_Question_Modal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+      <div class="modal-content">
+            <div class="modal-header sb-sidenav-dark">
+                <h5 class="modal-title" id="exampleModalLabel" style="color: honeydew;">Edit Question</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body overflow-auto" style="max-height:500px">
+                <form id="edit-question" method="POST"  autocomplete="off" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <!--Project name-->
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div>
+                                <label class="form-label" for="model_question">Question Text</label>
+                                <input type="text" class="form-control border" id="model_question" name="question" value="{{form.question.value|safe}}" required>
+                            </div>
+                        </div>  
+                    </div>                     
+                    <!-- Estimated Hours,active -->
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-6 col-md-6 col-lg-12">
+                            <div class="form-outline">
+                                <label class="form-label" for="edit_question_option">Question Type</label>
+                                <select class="form-select form-select-lg mb-3" id="edit_question_option" name="type" aria-label=".form-select-lg example">
+                                {% comment %} <option selected>Open this select menu</option> {% endcomment %}
+                                <option value="radio" selected>Radio Button</option>
+                                <option value="text">Text Field</option>
+                                </select>
+                            </div>
+                            <div class="form-outline attachment-edit">
+                                <label class="form-label" for="edit_attachment">Attachment</label>
+                                <input type="file" class="form-control border" id="edit_attachment" name="file_name" />
+                                <label id="existing_attachment"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-6 col-md-6 col-lg-12">
+                            <div id="edit_option_outer" class="form-outline">
+                                
+                                <label class="form-label" for="estimated_hrs">Answer Options</label>
+                                
+                                <div class="option_eq" id="div_edit_option">
+                                    
+                                </div>
+                                <!-- <div class="option" id="div_option">
+                                    <div id="opt1">
+                                    <label class="form-label" id="option_label1" for="option1">Option 1:</label>
+                                    <input type="text" class="form-control border" id="option1" value="{{form.type.value|safe}}" name="options" required>
+                                    </div>
+                                </div> -->
+                                <div>
+                                    <svg id="add1_question_option" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-plus-square add_option_eq"  viewBox="0 0 16 16">
+                                        <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                    </svg>
+                                    <svg id="remove_question_option" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-dash-square remove_option_eq" viewBox="0 0 16 16">
+                                        <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- submit -->
+                    <div class="justify-content-around mb-3 row">  
+                        <div class="col-6 col-md-6 col-lg-12 " >
+                            <button type="submit" name="edit_question" class="form-control" style="background-color: #41A8B9;">Update</button> 
+                        </div>
+                    </div> 
+                </form>
+            </div>          
+        </div>
+    </div>
+</div>
+
+
+<!--Edit section name modal-->
+<div class="modal fade" id="Edit_Section_name_Modal" tabindex="-1" aria-labelledby="Edit_Section_name_Modal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+      <div class="modal-content">
+            <div class="modal-header sb-sidenav-dark">
+                <h5 class="modal-title" id="exampleModalLabel" style="color: honeydew;">Edit Section</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body overflow-auto" style="max-height:460px">
+                <form  method="POST" id="edit-section-form" autocomplete="off">
+                    {% csrf_token %}
+                    <!--Project name-->
+                    <div class="justify-content-around row ">
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="form-outline">
+                                <input type="text" class="form-control border mb-2"  id="edit-section_name" name="section_name" value="" required>
+                                <label class="form-label" for="name">Section Name</label>
+                            </div>
+                        </div>  
+                    </div>                     
+                    <!-- submit -->
+                    <div class="justify-content-around row">  
+                        <div class="col-6 col-md-6 col-lg-6 " >
+                            <button type="submit" name="edit_section" class="form-control" style="background-color: #41A8B9;">Update</button> 
+                        </div>
+                    </div> 
+                </form>
+            </div>          
+        </div>
+    </div>
+</div>
+
+
+<!-- question form attachment validation script -->
+<script type="text/javascript">
+  // Function to handle file validation
+  function validateFile() {
+    var fileInput = document.getElementById('edit_attachment');
+    var file = fileInput.files[0];
+
+    // File type validation
+    var allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please select a valid file type (JPEG, PNG, PDF).');
+      fileInput.value = ''; // Clear the file input
+      return false;
+    }
+
+    // File size validation (in bytes)
+    var maxSize = 10 * 1024 * 1024; // 10 MB
+    if (file.size > maxSize) {
+      alert('File size exceeds the maximum limit of 10 MB.');
+      fileInput.value = ''; // Clear the file input
+      return false;
+    }
+
+    // File is valid
+    return true;
+  }
+
+  // Add event listener to the file input
+  document.getElementById('edit_attachment').addEventListener('change', validateFile);
+</script>
+
+
+
+<script type="text/javascript">
+    
+    var option_cnt_eq = 1;
+    $(document).ready(function() {
+    
+        var myDropdown = document.getElementById("edit_question_option");
+        var myElement = document.getElementById("edit_option_outer");
+
+        function handle_edit_options(myDropdown,myElement){
+            if (myDropdown.value === "text") {
+                myElement.style.display = "none";
+                for (var i=1;i<=option_cnt_eq;i++){
+                    $("#option_eq"+i.toString()).attr('required',false);
+                    $("#option_eq"+i.toString()).attr('value','');
+                    //console.log($("#option_eq"+i.toString()));
+                }
+            } else {
+                myElement.style.display = "block";
+            }
+        }
+        
+        myDropdown.addEventListener("change", function() { handle_edit_options(myDropdown,myElement); });
+
+        var table = $('.dataTable').DataTable({
+        lengthMenu: [200,100,50,25,10],
+        "scrollX": true,
+        "columnDefs" : [
+                        { 
+                            className : "text-center",targets:[3,4],
+                        },
+                    ]
+        });
+
+        // Get the section name when the edit button is clicked
+        $('.list-group-item a[data-bs-toggle="modal"]').click(function() {
+            var listItem = $(this).closest('.list-group-item');
+            var sectionName = listItem.find('.section_name span').text();
+            console.log(sectionName)
+            // Set the section name in the modal
+            $('#edit-section_name').val(sectionName);
+        });
+        $('#Edit_Section_name_Modal').on('shown.bs.modal', function() {
+            // Trigger focus on the input field
+            $('#edit-section_name').focus();
+        });
+
+        table.on('click','tr .edit-question-row',function(){
+            console.log("clicked....")
+            var question_id =  table.row($(this).closest('tr'));
+            var selected_row = $(this).closest('tr');
+            var row_id = selected_row.attr('id');
+            var question = "/projects/checklist/get-question/"+row_id.toString();
+            $('#edit-question').attr('action',"/projects/checklist/edit-question/{{current_checklist.id}}/{{current_section.id}}/"+row_id.toString())
+            
+            
+            $.getJSON(question, {
+                tagmode: "any",
+                format: "json"
+            })
+            .done(function( data ) {
+            //console.log(data.attachment+"attahcment_details");
+            var attachment_details = document.getElementById('existing_attachment')
+            if (data.attachment.name != null) {
+                attachment_details.innerHTML = 'Existing file: <a style="color:rgb(9, 139, 172);" href="'+data.attachment.link+'">'+data.attachment.name.split("/")[1]+'</a>, upload new file to modify';
+            }
+            else{
+                attachment_details.innerHTML =  '';
+            }
+
+            //since the data is newly populated from db data
+            option_cnt_eq = 0
+            
+            var myDropdown_new = document.getElementById("edit_question_option");
+            var myElement_new = document.getElementById("edit_option_outer");
+            $('#model_question').val(data.question);
+            if(data.type=="radio"){
+                $('#edit_question_option').val("radio");
+                handle_edit_options(myDropdown_new,myElement_new);
+                for (var i=0;i<data.option.length;i++){
+                    option_cnt_eq++
+                    
+                    var existing_option = document.getElementById('opt_eq'+option_cnt_eq.toString())
+                    if (!existing_option){
+                    $('#div_edit_option').append(
+                    '<div id="opt_eq'+option_cnt_eq.toString()+'">'+
+                    '<label class="form-label" id="option_label_eq'+option_cnt_eq.toString()+'" for="option'+option_cnt_eq.toString()+'">Option '+option_cnt_eq.toString()+':</label>'+
+                    '<input type="text" class="form-control border" id="option_eq'+option_cnt_eq.toString()+'" value="'+data.option[i]+'" name="options" required>'+
+                    '</div>'
+                    );
+                    }
+                }
+            }
+            else{
+                $('#edit_question_option').val('text');
+                handle_edit_options(myDropdown_new,myElement_new);
+            }
+            });
+            
+        });
+
+        $("#add1_question_option").click(function(){
+            option_cnt_eq = option_cnt_eq+1;
+            $(".option_eq").append('<div id="opt_eq'+option_cnt_eq.toString()+'">'+
+            '<label id="option_label_eq'+option_cnt_eq.toString()+'" for="option'+option_cnt_eq.toString()+'"> Option '+ option_cnt_eq.toString()+':</label>'+
+            '<input type="text" class="form-control border" id="option_eq'+option_cnt_eq.toString()+'" value="{{form.type.value|safe}}" name="options">'
+            );
+        });
+
+        $("#remove_question_option").click(function(){
+        if(option_cnt_eq > 1){
+            var myDiv = document.getElementById("div_edit_option");
+            //console.log('removed last child')
+            var lastChild = myDiv.lastChild;
+            myDiv.removeChild(lastChild); 
+            option_cnt_eq = option_cnt_eq-1;
+        }
+        });
+    });
+
+</script>
+
+
+<!-- validate question name -->
+<!-- question name is not validated while editing as the name column is made readonly-->
+<script type="text/javascript">
+  $('#Edit_Question_Modal').on('shown.bs.modal', function () {
+        var inputField = document.getElementById("model_question");
+        var question = inputField.value
+        
+        inputField.addEventListener('input', function() {
+        // Check if the value has changed
+        if (inputField.value.toLowerCase() !== question.toLowerCase()) {
+            // Perform validation for the changed value
+            document.getElementById("edit-question").addEventListener("submit", validateEditQuestionName);
+        }
+        else{
+            document.getElementById("edit-question").removeEventListener('submit',validateEditQuestionName)
+        }
+        });
+        });
+    // Function to validate section name
+    function validateEditQuestionName(event) {
+        event.preventDefault(); // Prevent the form from submitting automatically
+        var inputField = event.target.elements.question;
+        var question = inputField.value
+        // Make an API request to check if the section name already exists
+        fetch("/projects/checklist/validate-question-name", {
+            method: "POST",
+            body: JSON.stringify({ checklist_id: {{current_checklist.id}},
+                                   question: question.toLowerCase(),
+                                   section_id: {{current_section.id}} }),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                "Content-Type": "application/json",
+            },
+        })
+        .then(function(response) {
+            var data = response.json()
+            return data;
+        })
+        .then(function(data) {
+            if (data.status == "exists") {
+                // Section name already exists, show an error message or take appropriate action
+                alert("Question already exists. Please enter a new one!");
+            } else {
+
+                // Section name is valid, proceed with form submission or take appropriate action
+                var questionInput = document.createElement('input');
+                questionInput.type = 'hidden';
+                questionInput.name = event.submitter.name;
+                questionInput.value = '';
+                event.target.appendChild(questionInput);
+                event.target.submit();
+            }
+        })
+        .catch(function(error) {
+            // Handle any error that occurred during the API request
+            console.error("Error:", error);
+        });
+    }
+
+</script>
+
+<script type="text/javascript">
+    $('#Edit_Section_name_Modal').on('shown.bs.modal', function () {
+    var inputField = document.getElementById("edit-section_name");
+    var section = inputField.value
+    
+    inputField.addEventListener('input', function() {
+        // Check if the value has changed
+        if (inputField.value.toLowerCase() !== section.toLowerCase()) {
+            // Perform validation for the changed value
+            document.getElementById("edit-section-form").addEventListener("submit", validateEditSectionName);
+        }
+        else{
+            document.getElementById("edit-section-form").removeEventListener('submit',validateEditSectionName)
+        }
+    });
+    });
+    // Function to validate section name
+    function validateEditSectionName(event) {
+        event.preventDefault(); // Prevent the form from submitting automatically
+        var sectionName = event.target.elements.section_name.value;;
+        
+        // Make an API request to check if the section name already exists
+        fetch("/projects/checklist/validate-section-name", {
+            method: "POST",
+            body: JSON.stringify({ checklist_id: {{current_checklist.id}},
+                                   section_name: sectionName.toLowerCase() }),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                "Content-Type": "application/json",
+            },
+        })
+        .then(function(response) {
+            var data = response.json()
+            console.log(response)
+            return data;
+        })
+        .then(function(data) {
+            if (data.status == "exists") {
+                // Section name already exists, show an error message or take appropriate action
+                alert("Section name already exists. Please choose a different name.");
+            } else {
+
+                // Section name is valid, proceed with form submission or take appropriate action
+                var editSectionInput = document.createElement('input');
+                editSectionInput.type = 'hidden';
+                editSectionInput.name = event.submitter.name;
+                editSectionInput.value = '';
+                event.target.appendChild(editSectionInput);
+                event.target.submit();
+            }
+        })
+        .catch(function(error) {
+            // Handle any error that occurred during the API request
+            console.error("Error:", error);
+        });
+    }
+    
+    
+</script>
+{% endblock %}

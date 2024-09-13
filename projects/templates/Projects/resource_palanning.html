@@ -1,0 +1,111 @@
+{% extends "base.html" %} {% block title %}resource{% endblock %}
+{% block resourceplanning_active %}active{% endblock %} {% block main-content %}
+
+{% block Head %}
+{% load static %}
+{% endblock %}
+<div class="card ">
+    <div class="card-header">
+        <form action="" id="filterForm" method="POST">
+            {% csrf_token %}
+            <div class="justify-content-between row">
+                <div class="col-5 col-md-4 col-lg-3">
+                    <label class="form-group border-lable-flt">
+                        <select class="form-control custom-select" name="Department" id="Department" required>
+                            
+                        </select><span><i class="fas fa-filter"></i>Department</span>
+                    </label>
+                </div>
+                <div class="col-5 col-md-4 col-lg-2" >
+                    <h4 class="m-0" id="title"></h4>
+                </div>
+                <div class="col-5 col-md-4 col-lg-2">
+                    <div class="form-outline">
+                        <input type="month" class="form-control month-select" id="month" name="month" required >
+                        <label class="form-label" for="month">Month</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div  class="card-body" id="planningTable">
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        var table = $('.dataTable').DataTable({
+            scrollX: true,
+            scrollCollapse: true,
+            responsive:true,
+            fnDrawCallback : function() {$('[data-toggle="popover"]').popover(); }
+            })
+                get_data();
+        })
+
+function get_data(){
+    $.ajax({
+        url: "{% url 'getPlandetails' %}",
+        type:'GET',
+        success: function(response) {
+            loadPage(response)
+        },
+            dataType: "json"
+        });
+    }
+
+$(".form-control").change(function (e){
+    $.ajax({
+    type:'POST',
+    url:"{%url 'getPlandetails'%}",
+    data:$('#filterForm').serialize(),
+    dataType:"json",
+    headers:{'X-CSRFToken':'{% csrf_token %}'},
+    success: function(response) {
+        loadPage(response)
+    }
+    });
+})
+
+function loadPage(response){
+    $('#month').val(response.month).focus()
+        $('#Department').empty()
+        $.each(response.Department, function(i, val){
+            $('#Department').append('<option value="' + val+ '">' + val + '</option>');
+        }); 
+        var tableHeaders ="";
+        $.each(response.tbl_data.columns, function(i, val){
+                tableHeaders += "<th>" + val + "</th>";
+        });
+        $("#planningTable").empty();
+        $("#planningTable").append('<table id="displayTable" class="dataTable display nowrap compact cell-border" width="100%"><thead><tr>'+tableHeaders+'</tr></thead></table>');
+        var k = '<tbody>'
+        $.each(response.tbl_data.data, function(i,val){
+        k+= '<tr>';
+        $.each(val, function(j,cellval){
+            if (j==0){
+            k+= '<td > '+cellval+' </td>'
+            }
+            else{
+            k+=  cellval == null? '<td></td>':
+            cellval =='Sunday'?'<td style="background-color: gray;"></td>':
+            cellval.includes('\n')?
+            '<td style="background-color: orange;" data-toggle ="popover" title ="'+ cellval +'" data-trigger="hover"></td>':
+            '<td style="background-color: green;" data-toggle ="popover" title ="'+ cellval +'" data-trigger="hover"></td>';
+            }
+        });
+        k+= '</tr>';
+    });
+    k+='</tbody>'; 
+    $('#displayTable').append(k);
+    $('#title').text( response.month.substring(0,5) + GetMonthName(parseInt(response.month.substring(5,7))))
+}
+
+function GetMonthName(monthNumber) {
+      var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      return months[monthNumber - 1];
+}
+</script>
+
+
+{% endblock %}

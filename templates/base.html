@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    {% load static %}
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+    
+        <title>{% block title %}TR_Base{% endblock %}</title>
+        <!--   Data Table -->
+        <link rel="stylesheet" href="{% static 'css/dataTables.1.10.24.css' %}">
+        <link rel="stylesheet" href="{% static 'css/buttons.dataTables.min.css' %}">
+       
+        <!-- Main Bootstrap style -->
+        <link rel="stylesheet" href="{% static 'css/styles.css'%}">
+        <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+        <!-- Floating label  -->
+        <link rel="stylesheet" href="{% static 'css/mdb.min.css'%}">
+        <!-- Bootstrap icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="{% static 'css/bootstrap-icons.css'%}">
+        <!-- Font-awesome icons -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+        <script src="{% static 'js/font-awesome.min.js.js'%}"></script>
+    
+        <!--Amchart Resources -->
+        <script src="https://cdn.amcharts.com/lib/4/core.js"></script>
+        <script src="https://cdn.amcharts.com/lib/4/charts.js"></script>
+        <script src="https://cdn.amcharts.com/lib/4/themes/animated.js"></script>
+        <script src="https://www.amcharts.com/lib/4/themes/dataviz.js"></script>
+        
+        {% block Head %}  {% endblock %}
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <style>
+            @media (max-width: 1366px) {
+            .navbar{
+                font-size: 12px;
+            }
+            .navbar img{
+                height: 30px;
+            }
+            .card-header{ 
+                font-size: 12px;
+                padding:0.5rem 1rem;
+            }
+            .card-body{
+                padding:0.5rem;
+            }
+            table th, table td, ::placeholder, select option,label{
+                font-size: 12px;
+            }
+            .form-select,.form-control{
+                font-size: 12px;
+            }
+            /* dashboard */
+            tspan{
+                font-size: 12px;
+            }
+            /* datatable */
+            .dataTables_info, .paginate_button{
+                font-size: 12px;
+            }
+            /* for date in approval page and submission page*/
+            h5{
+                font-size: 14px;
+            }
+            /* resourceplanning heading like(yyyy-month)*/
+            h4{
+                font-size: 15px;
+            }
+            /* for date in submission page*/
+            .hours_{
+                font-size: 12px;
+            }
+            .cardfooter div, span{
+                font-size: 12px;
+            }
+            h6{
+                font-size: 15px;
+            }
+        }
+        </style>
+        <!-- <script src="{% static 'js/jquery-3.6.0.min.js'%}"></script> -->
+    </head>
+    <body class="bg-black bg-opacity-10 tasksubmit">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white px-3" >
+            <div class="container-fluid">
+                <a class="navbar-brand py-1" href="#">
+                    <img src="{% static 'assets/images/icpro.png'%}" height="34dvh" >
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-lg-0">
+                        {% if module != "home" %}
+                            <li class="nav-item">
+                                <a class="nav-link {% block home_active %}{% endblock %}" href="{% url 'index' %}">
+                                    <i class="bi bi-house-fill"></i> HOME
+                                </a>
+                            </li>  
+                        {% if module == "timesheet" %}            
+                            <li class="nav-item">
+                                <a class="nav-link {% block submission_active %}{% endblock %}" href="{% url 'submission' %}">
+                                    <i class="bi bi-calendar-check-fill"></i> TIMESHEET
+                                </a>
+                            </li>
+                            {% if request.user.role != 'Employee'%}
+                            <li class="nav-item">
+                                <a class="nav-link {% block validation_active %}{% endblock %}" href="{% url 'All-timesheet-log' %}">
+                                    <i class="bi bi-check-square-fill"></i> APPROVAL
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% block projectlist_active %}{% endblock %}" href="{% url 'time_managemnet' %}">
+                                    <i class="bi bi-ui-checks"></i> PROJECT LIST
+                                </a>
+                            </li>
+                            {% endif %}
+                        {% endif %}
+                        {% if module == "document" %}
+                            <li class="nav-item">
+                                <a class="nav-link {% block documents_active %}{% endblock %}" href="{% url 'Documents' %}">
+                                    <i class="bi bi-file-earmark-post"></i> DOCUMENTS
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% block lesson_active %}{% endblock %}" href="{% url 'lesson' %}">
+                                    <i class="bi bi-file-text-fill"></i> LESSON LEARNT
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if module == "analysis" %}
+                        <li class="nav-item">
+                            <a class="nav-link {% block dashboard_active %}{% endblock %}" href="{% url 'timesheet_analysis' %}">
+                                <i class="bi bi-speedometer"></i> Overview
+                            </a>
+                        </li>
+                        {% if request.user.role != 'Employee'%}
+                        <li>
+                            <a class="nav-link {% block overall_timesheet_active %}{% endblock %}" href="{% url 'OverallTimesheetLog' %}">
+                                <i class="bi bi-speedometer"></i> Summary
+                            </a>
+                        </li>
+                        <!-- <li class="nav-item">
+                            <a class="nav-link {% block monthly_report_active %}{% endblock %}" href="{% url 'employee_month_analysis' %}">
+                                <i class="bi bi-speedometer"></i> REPORT
+                            </a>
+                        </li> -->
+                        <li class="nav-item">
+                            <a class="nav-link {% block all_employee_active %}{% endblock %}" href="{% url 'all-timesheet-analysis' %}">
+                                <i class="bi bi-speedometer"></i> Employee Overview
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% block project_analysis_active %}{% endblock %}" href="{% url 'all-project-analysis' %}">
+                                <i class="bi bi-speedometer"></i> Project Overview
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% block task_active %}{% endblock %}" href="{% url 'Task_Analysis' %}">
+                                <i class="bi bi-speedometer"></i> Task Overview
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link {% block time_analysis_active %}{% endblock %}" href="{% url 'timeBudgetAnalysis' %}">
+                                <i class="bi bi-speedometer"></i> Actual/Budget Hours
+                            </a>
+                        </li>
+
+                        <!-- <li class="nav-item">
+                            <a class="nav-link {% block task_employee_active %}{% endblock %}" href="{% url 'task_vs_employee_analysis' %}">
+                                <i class="bi bi-speedometer"></i> TASK/EMPLOYEE
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% block department_active %}{% endblock %}" href="{% url 'Department_Analysis' %}">
+                                <i class="bi bi-speedometer"></i> DEPARTMENT
+                            </a>
+                        </li> -->
+                        {% endif %}
+                        {% endif %}
+                            {% if module == "project" %}
+                                <li class="nav-item">
+                                    <a class="nav-link {% block project_active %}{% endblock %}" href="{% url 'list-projects' %}">
+                                        <i class="bi bi-kanban-fill"></i> PROJECTS
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% block tasksummary_active %}{% endblock %}" href="{% url 'task_summary' %}">
+                                        <i class="bi bi-card-list"></i> TASK SUMMARY
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% block planningchart_active %}{% endblock %}" href="{% url 'gantchart-filter' %}">
+                                        <i class="bi bi-bar-chart-line-fill"></i> PLANNING CHART
+                                    </a>
+                                </li>  
+                                <li class="nav-item">
+                                    <a class="nav-link {% block resourceplanning_active %}{% endblock %}" href="{% url 'resourceplanning' %}">
+                                        <i class="bi bi-file-earmark-bar-graph-fill"></i> RESOURCE PLANNING
+                                    </a>
+                                </li>   
+                            {% endif %}
+                            {% if module == "usermanagement" %}
+                                <li class="nav-item">
+                                    <a class="nav-link {% block employees_active %}{% endblock %}" href="{% url 'employeeDetails' %}">
+                                        <i class="bi bi-people-fill"></i> USER 
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% if module == "settings" %}
+                                <li class="nav-item">
+                                    <a class="nav-link {% block template_active %}{% endblock %}" href="{% url 'list-templates' %}">
+                                        <i class="bi bi-textarea-resize"></i> TEMPLATE
+                                    </a>
+                                </li>
+                                <!-- <li class="nav-item">
+                                    <a class="nav-link {% block checklist_active %}{% endblock %}" href="{% url 'list-checklist' %}">
+                                        <i class="bi bi-textarea-resize"></i> CHECKLIST
+                                    </a>
+                                </li> --> 
+                            {% endif %}
+                        {% endif %}
+                    </ul>
+                    <div class="d-flex">
+                        <ul class="navbar-nav">
+                            <li><a href="{% url 'logout' %}" style="text-transform:uppercase;">{{request.user.first_name}}<i class="bi bi-power "></i></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div id="layoutSidenav_content" >
+            <main>
+                <div class="container-fluid px-1" style="height: 92dvh;padding-top: 0.125rem;" >
+                    {% block main-content %}This is Main content Area{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script> -->
+        <!-- bootstrap 5.1.3 -->
+        <!-- <script src="{%static 'js/bootstrap.bundle.min.js.js'%}"></script> -->
+
+        <script src="{%static 'js/scripts.js'%}"></script>
+
+        <script src="{%static 'js/mdb.min.js' %}"></script>
+
+        <!-- js file for datatables -->
+        <script src="{%static  'js/dataTables1.10.24.js' %}"></script>
+
+        <script src="{%static  'js/dataTables.buttons.min.js' %}"></script>
+        <script src="{%static  'js/datatable_buttons.html5.min.js' %}"></script>
+        <script src="{%static  'js/datatable_buttons.print.min.js' %}"></script>
+        <script src="{%static  'js/ajax_pdfmake.min.js' %}"></script>
+        <script src="{%static  'js/ajax_jszip.min.js' %}"></script>
+    </body>
+</html>

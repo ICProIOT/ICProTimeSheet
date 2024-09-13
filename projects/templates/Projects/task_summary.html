@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Projects {% endblock %}
+{% block tasksummary_active %}active{% endblock %}
+{% block main-content %}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row justify-content-between">
+            <div class="col-sm-4 col-md-4 col-lg-2">
+                <span><i class="fas fa-table"></i> <strong>Task Summary</strong></span>
+            </div>
+            <div class="col-sm-2 col-md-2 col-lg-1">
+                <input type="checkbox" class="form-check-input" onchange="onChange(this)" name="active" id="isActive" checked>Active</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <table class="table table-striped table-responsive table-sm m-0" id="tasksummarytable" style="width: 100%;">
+            <thead >
+                <th>Project name</th>
+                <th>Total Task</th>
+                <th align="center" style="color: red;">Open</th>
+                <th style="color: orange;">Inprogress</th>
+                <th style="color: blue;">Hold</th>
+                <th style="color: green;">Completed</th>
+            </thead>
+            
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $.ajax({
+            url: "{% url 'loadtasksummary_table' %}",
+            success: function(json) {
+                load_data(json)
+            },
+            dataType: "json"
+        });
+        
+    });
+    function load_data(json)
+    {
+        console.log(json)
+        $('#tasksummarytable tr').not(function(){ return !!$(this).has('th').length; }).remove();
+        var k = '<tbody>'
+        $.each(json.tasks, function(i, val){
+            k+='<td>'+val['pid__name']+'</td>'
+            k+='<td>'+val['Total']+'</td>'
+            k+='<td>'+val['New']+'</td>'
+            k+='<td>'+val['Inprogress']+'</td>'
+            k+='<td>'+val['Hold']+'</td>'
+            k+='<td>'+val['Completed']+'</td></tr>'
+        //         
+        })
+        k+='</tbody>'
+        $('#tasksummarytable').append(k);
+    }
+</script>
+
+<script>
+    function onChange(e) {
+        $.ajax({
+            type:"POST",
+            url:"{% url 'loadtasksummary_table'%}",
+            data :{"checked":e.checked},
+            headers:{'X-CSRFToken':'{% csrf_token %}'},
+            success:function(response){
+                load_data(response)
+            }
+        })
+    } 
+
+    if ( window.history.replaceState ) {
+
+      window.history.replaceState( null, null, window.location.href );
+
+    }
+
+</script>
+{% endblock %}

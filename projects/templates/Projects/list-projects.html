@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+
+{% block title %}Projects {% endblock %}
+{% block project_active %}active{% endblock %}
+{% block Head %}
+<style>
+    table tr td:nth-of-type(2) { /* Select the 2rd td */
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block main-content %}
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-table"></i> <strong>Projects Details</strong>
+        <span style="float: right; "><a href=""data-bs-toggle="modal" data-bs-target="#Add_project_Modal" style="color:rgb(9, 139, 172);">+ Add Project</a> </span>
+    </div>
+    <div class="card-body">
+        <table id="project_table" class="dataTable display nowrap compact cell-border" style="width: 100%;">
+            <thead >
+                <th></th>
+                <th>Project Name</th>
+                <th>PID</th>
+                <th>Department</th>
+                <th>Enter/Audit</th>
+                <th>Checklists</th>
+                <th>Bdg.Hrs</th>
+                <th>Act.Hrs</th>
+                <th>Status</th>
+                <th>Progress</th>
+                <th style="text-align: center;">Delete</th>
+            </thead>
+            <tbody> 
+                {% for project in list %}
+                    <tr p_id="{{project.pid}}" pk_id="{{project.id}}">
+                        <td>{{forloop.counter}}</td>
+                        <td class="row_data" edit_type="click" col_name="proj_name" ondblclick="location.href ='/projects/task-manager/{{project.id}}';" style="color:rgb(9, 139, 172);">{{project.name}}</a></td>          
+                        <td class="row_data" edit_type="click" col_name="pro_id">{{project.pid}}</td>
+                        <td>
+                            <select class="form-control custom-select dropdown_edit bg-transparent border-0" col_name="pro_dept">
+                                <option selected="selected" hidden>{{project.department}}</option>
+                                <option value="Automation">Automation</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Software">Software</option>
+                                <option value="Purchase">Purchase</option>
+                            </select>
+                        </td>
+                        <td>
+                        {% if project.checklists.all|length > 0 %} 
+                            <a style="color:rgb(9, 139, 172);" href="/projects/answer/{{project.id}}">Audit</a>/<a style="color:rgb(9, 139, 172);"  href="/projects/audit/{{project.id}}/audit">Show<a>
+                            {% else %}
+                            <p> add a checklist </p>
+                        {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex flex-wrap justify-content-center">
+                                {% for ckl in project.checklists.all %}
+                                    <a  href="/projects/checklist/{{ckl.id}}/" style="padding:4px; color:rgb(9, 139, 172);" data-toggle="tooltip" title="{{ckl.name}}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
+                                        <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                                        <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0zM7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z"/>
+                                        </svg>
+                                    </a>
+                                {% endfor %}
+                                {% if project.checklists.all.count == 0 %}
+                                <a style="padding:4px; " id="add_ckl_button"  data-bs-toggle="modal" data-bs-target="#Add_checklist" name="Add" data-toggle="tooltip" title="Add">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16">
+                                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                    </svg>
+                                </a>
+                                {% else %}
+                                <a style="padding:3px; " id="add_ckl_button"  data-bs-toggle="modal" data-bs-target="#Add_checklist" name="Add" data-toggle="tooltip" title="Add/Remove">
+                                    <svg xmlns="http://www.w3.org/2000/svg" style="margin:2px" width="18" height="18" fill="currentColor" class="bi bi-plus-square" viewBox="0 0 16 16">
+                                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                    <!-- plus and minus buton -->
+                                    {% comment %} <path d="m1.854 14.854 13-13a.5.5 0 0 0-.708-.708l-13 13a.5.5 0 0 0 .708.708ZM4 1a.5.5 0 0 1 .5.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2A.5.5 0 0 1 4 1Zm5 11a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5A.5.5 0 0 1 9 12Z"/> {% endcomment %}
+                                    </svg>
+                                </a>
+                                {% endif %}
+
+                            </div>
+                        </td>
+                        <td class="row_data" edit_type="click" col_name="est_hours">{{project.p_code}}</td>
+                        <td>{{project.act_hrs}}</td>
+                            {% if project.is_active  %}
+                                <td>Active</td>
+                                <td><progress id="file" value="{{project.weightage}}" max="100" style="width: 50%;"></progress> <b>{{project.weightage}}%</b></td>                           
+                            {% else %}
+                                <td><i class="fa fa-check-circle" style="color: green;" aria-hidden="true"></i></td>
+                                <td><progress id="file" value="100" ></progress></td>
+                                {% endif %}
+                        {% if user.groups.all.0.name != 'Employee' %}
+                            <td style="text-align: center;"><a href="/projects/delete-project/{{project.id}}" onclick="return confirm('Delete {{project.name}} ? ')"><i class="fas fa-trash" style="color: red;"></i></a></td>
+                        {% endif %}
+                        </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+   
+<!--Add Project Modal -->
+<div class="modal fade" id="Add_project_Modal" tabindex="-1" aria-labelledby="Add_project_Modal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+      <div class="modal-content">
+            <div class="modal-header ">
+                <h5 class="modal-title" id="exampleModalLabel" >Add Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/projects/" method="POST" autocomplete="off">
+                    {% csrf_token %}
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="form-outline">
+                                <input type="text" class="form-control"  id="fname" name="name" value="{{form.name.value|safe}}" required>
+                                <label class="form-label" for="name">Project Name</label>
+                            </div>
+                        </div>  
+                    </div>  
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-outline">
+                                <input type="number" class="form-control" id="pid" name="pid" value="{{form.pid.value|safe}}" required>
+                                <label class="form-label" for="pid">PID</label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <label class="form-group border-lable-flt">
+                                <select class="form-control custom-select" id="department" name="department" value="{{form.department.value|safe}}" required>
+                                    <option value="" selected hidden>Select Department</option>
+                                    <option value="Automation">Automation</option>
+                                    <option value="Electrical">Electrical</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="Software">Software</option>
+                                    <option value="Purchase">Purchase</option>
+                                </select>
+                                <span>Department</span>
+                            </label>
+                        </div>
+                    </div>
+                   
+                    <!-- Estimated Hours,active -->
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-outline">
+                                <input type="number" class="form-control" id="estimated_hrs" value="{{form.estimated_hrs.value|safe}}" name="estimated_hrs" required>
+                                <label class="form-label" for="estimated_hrs">Hours</label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-check">
+                                {% if not form.is_active.value  %}
+                                <input class="form-check-input" type="checkbox"  id="avtiveStatus"  name="is_active" checked>
+                                {% else %}
+                                <input class="form-check-input" type="checkbox"  id="avtiveStatus"  name="is_active" >
+                                {% endif %}
+                                <label class="form-check-label" for="avtiveStatus">Active</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- submit -->
+                    <div class="justify-content-end mb-3 row">  
+                        <div class="col-6 col-md-6 col-lg-6 " >
+                            <button type="submit" class="form-control bg-info" >UPDATE</button> 
+                        </div>
+                    </div> 
+                </form>
+            </div>          
+        </div>
+    </div>
+</div>
+
+<!-- Add checklist Modal -->
+<div class="modal fade " id="Add_checklist" tabindex="-1" aria-labelledby="Add_checklist" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+      <div class="modal-content">
+            <div class="modal-header ">
+                <h5 class="modal-title" id="exampleModalLabel" >Add Checklists</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/projects/get-checklist/" method="POST" autocomplete="off">
+                    {% csrf_token %}
+                    <!--Project name-->
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="form-outline">
+                                <input type="text" class="form-control"  id="e_P_name1" name="name" readonly value="" required>
+                                <label class="form-label" for="name">Project Name</label>
+                            </div>
+                        </div>  
+                    </div>
+                    <!-- checklist will bind here -->
+                    <div id="selected_ckls"  class="overflow-auto" style="height:240px"></div>
+
+                    </div>  
+                    <!--  ubmit -->
+                    <div class="justify-content-end row">  
+                        <div class="col-6 col-md-6 col-lg-6 mb-3" >
+                            <input type="submit" class="form-control bg-info"  value="Update">
+                        </div>
+                    </div> 
+                </form>
+            </div>           
+        </div>
+    </div>
+</div>
+
+<!--  end Add checklist Modal -->
+<script type="text/javascript">
+
+function arrUnique(arr) {
+    var cleaned = [];
+        arr.forEach(function(itm) {
+            var unique = true;
+            cleaned.forEach(function(itm2) {
+                if (_.isEqual(itm, itm2)) unique = false;
+            });
+            if (unique)  cleaned.push(itm);
+        });
+        return cleaned;
+    }
+
+    $(document).ready( function () {
+        var table = $('.dataTable').DataTable({
+        ordering : false,
+        lengthMenu: [200,100,50,25,10],
+        scrollX: true,
+        scrollCollapse: true,
+        scrollY: '67dvh',
+        responsive:true,
+        "columnDefs" : [
+                        { 
+                            className : "text-center",targets:[0,2,4,5,6]
+                        },
+                    ]
+        });
+
+        table.on('click','tr #add_ckl_button',function(){
+            $('#e_P_name1').val(table.row($(this).closest('tr')).data()[1]);
+            var pid_val = table.row($(this).closest('tr')).data()[2];
+         	
+
+        $.getJSON( "/projects/get-checklist/"+pid_val, function( json ) {
+            
+            var checklist = eval('('+json["checklist"]+')');
+            var selected_checklist = eval('('+json["selected_checklist"]+')');
+            var items = "";
+            $("#selected_ckls").empty();
+            
+            if (checklist.length == 0){
+                $("#selected_ckls").append('<h6> No checklists found please add atleast one ! by clicking <a href="/projects/list-checklist/"> here </a></h6>')
+            }
+
+            for(var i=0; i < checklist.length; i++) {
+                const currentItem = checklist[i]
+                if (checklist[i].fields.section.length == 0){
+                    items += '<div class="col-12 col-md-6 col-lg-12"> \
+                                    <div class="form-outline"> \
+                                        <div class="form-check">  \
+                                            <input class="form-check-input"  type="checkbox" value="'+checklist[i]["pk"]+'" id="flexCheckDefault'+checklist[i]["pk"]+'" name="'+checklist[i]["pk"]+'" disabled >'+  
+                                            '<label class="form-check-label" for="flexCheckDefault'+checklist[i]["pk"]+'">' 
+                                                + checklist[i]["fields"]["name"] +
+                                            '</label> \
+                                            <h6>Add atleast one section to add <a href="projects/checklist/'+checklist[i]["pk"]+'"> '+checklist[i]["fields"]["name"]+'</a> to this project</h6>\
+                                        </div>   \
+                                    </div>  \
+                                </div>' 
+                            }
+                
+                else{
+                    if  (selected_checklist.some(item => item.fields.name === currentItem.fields.name)) {
+                        items += '<div class="col-12 col-md-6 col-lg-12"> \
+                                        <div class="form-outline"> \
+                                            <div class="form-check">  \
+                                                <input class="form-check-input" checked  type="checkbox" value="'+checklist[i]["pk"]+'" id="flexCheckDefault'+checklist[i]["pk"]+'" name="'+checklist[i]["pk"]+'" >'+  
+                                                '<label class="form-check-label" for="flexCheckDefault'+checklist[i]["pk"]+'">' 
+                                                    + checklist[i]["fields"]["name"] +
+                                                '</label> \
+                                            </div>   \
+                                        </div>  \
+                                    </div>' 
+                                }
+                    else{
+                    items += '<div class="col-12 col-md-6 col-lg-12"> \
+                                        <div class="form-outline"> \
+                                            <div class="form-check">  \
+                                                <input class="form-check-input"  type="checkbox" value="'+checklist[i]["pk"]+'" id="flexCheckDefault'+checklist[i]["pk"]+'" name="'+checklist[i]["pk"]+'" >'+  
+                                                '<label class="form-check-label" for="flexCheckDefault'+checklist[i]["pk"]+'">' 
+                                                    + checklist[i]["fields"]["name"] +
+                                                '</label> \
+                                            </div>   \
+                                        </div>  \
+                                    </div>' 
+                                }
+                 }
+            }
+            $("#selected_ckls").append(items);
+         });
+
+        });
+    });  
+
+    
+
+    $("#fname").keypress(function (e) {
+        var key = e.keyCode || e.which;       
+        //Regular Expression
+        var reg_exp = /^[A-Za-z0-9 _]+$/;
+        //Validate Text Field value against the Regex.
+        var is_valid = reg_exp.test(String.fromCharCode(key));
+        if (!is_valid) {
+            alert("No special characters Please!!! Only Under score")
+        }
+        return is_valid;
+      });
+
+    // Add tooltip for checklist icon in projects
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+    })
+
+    $(document).on('click', '.row_data', function(e) {
+            e.preventDefault();
+
+            //make div editable
+            $(this).closest('td').attr('contenteditable', 'true');
+            //add bg css
+            $(this).addClass('bg-light').css('padding','5px');
+
+            $(this).focus();
+    });	
+
+    // dropdown_edit
+    $(document).on('change', '.dropdown_edit', function(e) {
+        event.preventDefault();
+        var pk_id = $(this).closest('tr').attr('pk_id'); 
+        var p_id =  $(this).closest('tr').attr('p_id');
+        var row_div = $(this)	
+
+        var col_name = row_div.attr('col_name'); 
+
+        var arr = {};
+        arr[col_name] = $(this).val();;
+
+        $.extend(arr,{p_id:p_id},{pk_id:pk_id});
+        if ("{{user.groups.all.0.name}}"!='Employee'){
+        edit_table(arr)
+    }
+    else{
+        alert("You do not have permission to edit ")
+    }
+    })
+
+    // td edit
+    $(document).on('focusout', '.row_data', function(event) 
+    {
+        event.preventDefault();
+        var pk_id = $(this).closest('tr').attr('pk_id'); 
+        var p_id =  $(this).closest('tr').attr('p_id');
+        var row_div = $(this)			
+        .removeClass('bg-light') //add bg css
+        .css('padding','')
+
+        var col_name = row_div.attr('col_name'); 
+        var col_val = row_div.html(); 
+
+        var arr = {};
+        arr[col_name] = col_val;
+
+        $.extend(arr,{p_id:p_id},{pk_id:pk_id});
+        if ("{{user.groups.all.0.name}}"!='Employee'){
+        edit_table(arr)
+    }
+    else{
+        alert("You do not have permission to edit ")
+    }
+    })
+    function edit_table(arr){
+        $.post("{% url 'edit-project'%}",arr,
+            function(response){
+            if (response.status == 'ok') {
+                // It's all good
+                console.log(response)
+            } else {
+                // Do something with errors
+            }
+        })
+    }
+</script>
+{% endblock %}

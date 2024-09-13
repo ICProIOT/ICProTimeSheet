@@ -1,0 +1,612 @@
+{% extends "base.html" %} {% block title %}Submission{% endblock %}
+
+{% block submission_active %}active{% endblock %} {% block main-content %}
+
+{% block Head %}
+
+<style>
+    .hide_column {display : none; }
+    .table-responsive { max-height:78dvh;}
+    .popover {color: #39C5F2;}
+    @media screen and (min-width: 1367px) {
+        .hours_{
+            height: 36px;
+        }
+    }
+</style>
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/select2.min.css'%}">
+{% endblock %}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row justify-content-between align-items-center">
+            <div class="col-4">
+                <i class="bi bi-calendar-check-fill"></i><strong id="week_number" class="mx-2"></strong>
+            </div>
+            <div class="col-7 d-flex justify-content-end align-items-center">
+                <div>
+                    <button class="form-control border-0 left_arrow" type="button" ><i class="fas fa-angle-left"></i></button> 
+                </div>
+                    <h5 id="fromdate" class="mb-0"></h5>
+                        <span class="mx-2">-</span>
+                    <h5 id="todate" class="mb-0"></h5>
+                <div>
+                    <button class="form-control border-0 right_arrow" type="button" ><i  class="fas fa-angle-right"></i></button>
+                </div>
+                <div class="d-flex">
+                    <button class="form-control bg-light ms-2" data-toggle="popover" id="copytask" type="button" title="Extend Task Target Date"><i class="fas fa-clone" aria-hidden="true"></i></button>
+                    <button class="form-control bg-light mx-2" data-toggle="popover" id="previewbtn" type="button" title="Submit Timesheet"><i class="fa fa-paper-plane" aria-hidden="true"></i></button>
+                    <button class="form-control bg-light"  data-toggle="popover" type="button" data-bs-toggle="modal" data-bs-target="#assignModal" title="Assign Projects"><i class="fas fa-tasks" aria-hidden="true"></i></button>
+                </div> 
+            </div>
+        </div>
+    </div>
+    <div class="card-body mx-0 ">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover" id="timesheettable"></table>
+        </div>
+        <div class="row justify-content-end" id ="commentbox">
+            <div class="col-6 col-md-6 col-lg-7 ps-1">
+                    <label class="text-center" style="float: left; " for="comment" id="tasksubmissionLbl"></label>
+                    <textarea  placeholder="Comments" rows="4"  readonly class="form-control" id="commentTxt" value="" name="comment" ></textarea>
+                    <label style="display: none;" s class="form-label" for="department" id="submissionID"></label>
+            </div>
+        </div>
+        <div class="row justify-content-between" style="font-size: 14px;">
+            <div class="col-5 ">
+                <span class="ms-1 text-info">**To remove the task, double click on the row.</span>
+            </div>
+            <div class="col-5">
+               <span id="statusfield"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Task -->
+<div class="modal fade" id="addtask" aria-labelledby="task_Modal" aria-hidden="true" >
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel" >Add Tasks</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- <form enctype="multipart/form-data"  method="POST" autocomplete="off"> -->
+                    <!-- <label class="form-group border-lable-flt"> -->
+                        <select class="form-control project" id="_project" style="width: 100%;"></select>
+                        <!-- <span>Project</span> -->
+                    <!-- </label> -->
+
+                    <!-- <label class="form-group border-lable-flt">
+                        <select class="form-control milestone mb-3 selectpicker"  data-live-search="true" id="_milestone"><option value="" selected disabled>Select Milesone</option></select><span>Milestone</span>
+                    </label> -->
+                    <label class="form-group border-lable-flt">
+                        <select class="form-control task my-3 " id="_task">
+                            <option value="" selected disabled>Select Task</option>
+                        </select><span>Tasks</span>
+                    </label>
+                    <div class=" row justify-content-end" >
+                        <div class="col-5">
+                        <button type="button" class="form-control bg-info "id="tasksubmit" >Submit</button>
+                        </div>
+                    </div>
+                <!-- </form> -->
+            </div>            
+        </div>
+    </div>
+</div>
+
+<!-- Preview -->
+<div class="modal fade" id="preview" tabindex="-1" aria-labelledby="preview_Modal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header ">
+                <h5 class="modal-title" id="exampleModalLabel" >Total Work Hours</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-hover table-sm table-responsive table-striped" id="previewtable">
+                    <thead>
+                        <th>Day</th>
+                        <th>Hours</th>  
+                    </thead>
+                </table>
+                <div class="row justify-content-end" >
+                    <div class="col-5">
+                    <button type="submit" class="form-control bg-info submit_hours">SUBMIT</button>
+                </div>
+                </div>
+            </div>            
+        </div>
+    </div>
+</div>
+
+<!-- Assign Projects -->
+<div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModal_" aria-hidden="true">
+    <div class="modal-dialog  modal-lg modal-dialog-centered" >
+        <div class="modal-content">
+            <div class="modal-header ">
+                <h5 class="modal-title" id="exampleModalLabel" >Assign Projects </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control" id="searchInput" placeholder="Search ....">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm table table-striped" id="assignProjectsTable">
+                        <thead>
+                            <th>Projects</th>
+                            <th class="text-center"><input type="checkbox" id="Assign" class="allselect mx-2"><label for="Assign">Assign</label></th>  
+                        </thead>
+                    </table>
+                </div>
+                <div class="row justify-content-end" >
+                    <div class="col-3">
+                    <button type="submit" class="form-control visibility_submit bg-info">SUBMIT</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+   
+    // Search option indrop down
+    $("#_project").select2({
+        placeholder: "Select a project",
+        allowClear: true,
+        dropdownParent: $('#addtask')
+    });
+    // button popover
+
+    $('[data-toggle="popover"]').popover({
+            placement : 'left',
+            trigger : 'hover',
+        })
+
+    var task_id =  ""
+    var index_num = ""
+    var popshow =false
+    var weektotal = ""
+    var is_tableData=false
+    var previousCellValue =''
+    // get method
+    $.ajax({
+            url: "{% url 'get_time_sheet_templete' %}",
+            type:'GET',
+            success: function(response) {
+                load_data(response)
+            },
+            dataType: "json"
+        });
+    
+    function ajax_post(data)
+    {
+        $.ajax({
+            url: "{% url 'get_time_sheet_templete' %}",
+            type:'POST',
+            data:data,
+            success: function(response) {
+                load_data(response)
+            }
+        })
+    }
+
+    // copytask
+    $('#copytask').on("click",function(){
+        var fromdate_ = $("#fromdate").text();
+        if(is_tableData){
+            if (confirm("Do you want to extend the target date for all tasks to next week?")) {
+                ajax_post({fromdate_:fromdate_,mode:"extend"})
+            }
+        }
+        else{
+            alert("The table does not have any tasks.You cannot extend the target dates without tasks")  
+        }
+    })
+
+    // delete task
+    $('#timesheettable').on("dblclick",".deleterow",function() {
+        if($("#statusfield").text().split(':')[1]=='Submitted'||$("#statusfield").text().split(':')[1]=='Accepted')
+        {
+            alert("You have already submitted your tasks. No further updtaes permitted.")
+        }
+        else
+        {
+        var task_id =  $(this).closest('tr').attr('taid');
+        var fromdate_ = $("#fromdate").text();
+        if (confirm("Are you want to delete?")) {
+            ajax_post({task_id:task_id,fromdate_:fromdate_,mode:"delete"})
+        }
+    }
+    })
+    
+    // open preview and submit only total hour is above 48
+    $(document).on('click', '#previewbtn', function(){
+        if($("#statusfield").text().split(':')[1]=='Submitted'||$("#statusfield").text().split(':')[1]=='Accepted'){
+            alert("You have already submitted your tasks.")
+        }
+        else{
+            if(is_tableData){
+                if(parseInt(secondsToHm(weektotal))>=45){
+                    $("#preview").modal('show');
+                }
+                else {
+                    alert('Sorry !.... \n You cannot submit your timesheet because your total hours are less than 45 hours.');
+            }}
+            else{
+                alert("Sorry !.... \n You cannot submit your timesheet with out tasks")  
+        }}
+    });
+
+    //close preview,add task modals
+    $(document).on('click', '.btn-close', function(){
+        $("#preview").modal('hide');
+        $("#addtask").modal('hide');
+    });
+
+    //preview submitt
+    $('.submit_hours').on("click",function(){
+        var fromdate_ = $("#fromdate").text();
+        var todate_ = $("#todate").text();
+        ajax_post({fromdate_:fromdate_,mode:"update"})
+        $("#preview").modal('hide');
+    })
+
+    //post week
+    $('.right_arrow').on("click",function(){
+        var fromdate_ = $("#fromdate").text();
+        ajax_post({fromdate_:fromdate_,mode:"postdate"})
+    })
+
+    // pre week
+    $('.left_arrow').on("click",function(){
+        var fromdate_ = $("#fromdate").text();
+        ajax_post({fromdate_:fromdate_,mode:"predate"})
+    })
+
+    // open add task
+    $(document).on('click', '#addtaskmodal', function(){
+        if($("#statusfield").text().split(':')[1]=='Submitted'||$("#statusfield").text().split(':')[1]=='Accepted'){
+            alert("You have already submitted your tasks. No further entries are permitted.")
+        }
+        else{
+            $("#addtask").modal('show');
+        }
+    });
+    
+    //add task
+    $(document).on('click', '#tasksubmit', function(){
+        var taskName=$(".task option:selected").text();
+        var projectName=$(".project option:selected").text();
+        var deptName=$(".project option:selected").val();
+        var fromdate_ = $("#fromdate").text();
+        var todate_ = $("#todate").text();
+        $.ajax({
+            url: "{% url 'create_task_using_mtemplate' %}",
+            type:'POST',
+            data:{taskName:taskName,projectName:projectName,deptName:deptName,fromdate_:fromdate_,todate_:todate_},
+            success: function(response) {
+                load_data(response)
+            }    
+        })
+        $("#addtask").modal('hide');
+    })
+
+    //assignModal
+    $(document).on('click', '.visibility_submit', function()  {
+        var proj_id = []
+        $('.row_select input:checked').each(function() {
+            pr_id = $(this).closest('tr').attr('prid')
+            proj_id.push(pr_id)
+        })
+        var fromdate_ = $("#fromdate").text();
+        $.ajax({
+                url: "{% url 'get_time_sheet_templete' %}",
+                type:'POST',
+                // convert proj_id list to jsonsring
+                data:{proj_id:JSON.stringify(proj_id),mode:"visible",fromdate_:fromdate_},
+                success: function(response) {
+                    load_data(response)
+                }
+            })
+        $('.btn-close').click()
+    })
+
+    //Select /deselect options
+    $(document).on('click', '.allselect', function()  {
+        $('.p_checkbox').prop('checked',$(this).prop('checked'))
+    })
+    
+    $(document).on('click', '.p_checkbox', function()  {
+        if($('.allselect').prop('checked') ==true){
+            $('.allselect').prop('checked',false)
+        }
+    })
+
+    //search option in visibility bootstrap table
+    $("#searchInput").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $("#assignProjectsTable tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+    
+    //hours click
+    $(document).on('focus', '.hours_', function(event) 
+        {   event.preventDefault();
+            hrs = $(this).val();
+            if($(this).attr('readonly') ==undefined){
+                previousCellValue = $ (this).val()
+                $('#commentbox').show();
+                var task_id =  $(this).closest('tr').attr('taid');
+                var rowData = $(this).closest('tr').find('td:first').text()
+                var index_num = $(this).attr('index_no');
+                var day_ = new Date(index_num)
+                const weekday = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+                var arr = {};
+                $('#tasksubmissionLbl').html('Date : ' +weekday[day_.getDay()]+index_num.substring(7,10) + "\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0"+ 'Project : '+rowData.split('\n')[0])
+                if(hrs!=''){
+                    $('#commentTxt').attr("readonly", false); 
+                    $.extend(arr, {task_id:task_id},{date:index_num});
+                    $.ajax({
+                        url: "{% url 'getTaskSubmission' %}",
+                        type:'POST',
+                        data:arr,
+                        success: function(response) {
+                            data =response.data
+                            $('#commentTxt').val(data[0]['comment'])
+                            $('#submissionID').html(data[0]['id'])
+                        }
+                    })
+                }
+                else{
+                    $('#commentTxt').attr("readonly", true); 
+                    $('#commentTxt').val("");
+                    $('#submissionID').html("");
+            }}else{$('#commentbox').hide();}
+        })
+
+    //hours entry
+    $(document).on('change', '.hours_', function(event) 
+        {
+            event.preventDefault();
+            var task_id =  $(this).closest('tr').attr('taid');
+            var index_num = $(this).attr('index_no');
+            var fromdate_ = $("#fromdate").text();
+            var arr = {};
+
+            let key = $(this).val() !=''? $(this).val():'00.00' ;
+            let regex = new RegExp("^[0-9.]+$");
+            // Check if key is in the reg exp
+            
+            if(!regex.test(key)){
+                alert("Invalid Format")
+                $(this).val(previousCellValue)
+            }
+             // check hours entry limit (lessthan 14)
+            else {
+            if(parseFloat(key)<=14.00){
+            arr["hours"] = key;
+            $.extend(arr, {task_id:task_id},{date:index_num},{fromdate_:fromdate_},{mode:"edithours"});
+            $.ajax({
+                url: "{% url 'get_time_sheet_templete' %}",
+                type:'POST', 
+                data:arr,
+                success: function(response) {
+                        if(response['status'] != "invalid"){
+                            load_data(response)
+                            if(key!="00.00"&& key!="0"){  
+                                $.ajax({
+                                    url: "{% url 'getTaskSubmission' %}",
+                                    type:'POST',
+                                    data:arr,
+                                    success: function(response) {
+                                        data =response.data
+                                        $('#commentbox').show();
+                                        $('#commentTxt').attr("readonly", false); 
+                                        $('#commentTxt').val(data[0]['comment'])
+                                        $('#submissionID').html(data[0]['id'])
+                                    }
+                                });
+                            }}
+                        else{
+                            alert("Sorry!... \n Sum of tasks per day should be less han 14 hours.");
+                            $(this).val(previousCellValue)
+                        }
+                        }
+                    });
+                }
+            else 
+            {  
+                alert("Sorry!... \n Tasks hours per day should be less han 14 hours.") ;
+                $(this).val(previousCellValue)
+            }}
+        });
+
+    //  commentTxt
+    $(document).on('change', '#commentTxt', function(event){
+        var submissionID=$('#submissionID').html()
+        var comment=$(this).val()
+        $.ajax({
+            url: "{% url 'getTaskSubmission' %}",
+            type:'POST',
+            data:{submissionID:submissionID,comment:comment},
+            success: function(response) {
+                data =response.data
+                $('#commentTxt').val(data[0]['comment'])
+                $('#submissionID').html(data[0]['id'])
+            }
+        })
+    })
+    // Load Data
+    function load_data(response){
+        
+        $("#fromdate").text(response.from_date)
+        $("#todate").text(response.to_date)
+        $("#week_number").text('Weekly Timesheet Week :'+response.weeknumber)
+        $('#commentbox').hide();
+        $("#statusfield").text('')
+        if(response.submited_status != null){
+            
+            $("#statusfield").text(response.submited_status == '' ? '' :" Status :"+response.submited_status )
+
+            response.submited_status == "Submitted" ? $("#statusfield").css("color", "#0000FF") : 
+                response.submited_status == "Accepted" ? $("#statusfield").css("color", "#00FF00"):
+                response.submited_status == "Rejected" ? $("#statusfield").css("color", "#FF0000"):$("#statusfield").css("color", "#000000")
+            $("#statusfield").css("text-transform", "capitalize")
+        }
+
+         //Assign modal table
+         $('#assignProjectsTable tr').not(function(){ return !!$(this).has('th').length; }).remove();
+        var m='<tbody>'
+        if(response.projects_list.length==0){ 
+            m+='<tr><td colspan="2" class="text-center text-info text-uppercase">No projects!..." </td></tr>'
+            }
+        else{ 
+            $.each(response.projects_list, function(i, val){
+            if(response.assigned_projects.length!=0){
+            $.each(response.assigned_projects, function(index, value) {
+                
+                if(value['id']==val['id']){
+                    m+='<tr class="row_select" prid='+val['id']+'><td>'+val['name']+'</td><td class="text-center"><input type="checkbox" class="p_checkbox" checked name="'+val["id"]+'" /></td></tr>'
+                    return false;
+                }
+                else if(response.assigned_projects.length==index+1){
+                    m+='<tr class="row_select" prid='+val['id']+'><td>'+val['name']+'</td><td class="text-center"><input type="checkbox" class="p_checkbox" name="'+val["id"]+'" /></td></tr>'
+                }
+            })
+            } else{
+                m+='<tr class="row_select" prid='+val['id']+'><td>'+val['name']+'</td><td class="text-center"><input type="checkbox" class="p_checkbox" name="'+val["id"]+'" /></td></tr>'
+            }
+        }) 
+        }
+    
+        m+='</tbody>'
+        $("#assignProjectsTable").append(m)
+        
+        // Assigned proejcts
+        var optionslist = '<option value="" hidden><strong>Select Projects</strong></option>';
+        $.each(response.assigned_projects, function(val, text) {
+            optionslist += '<option value="'+text['department']+'">'+text['name']+'</option>';
+        });
+        $('.project').html(optionslist );
+
+        $(".project").change(function(){
+            var dept = $(this).val();
+            var options =  '<option value="" hidden><strong>Select Task</strong></option>'; 
+            $(response.tasks).each(function(index, value){
+                if(value['mid__department'] == dept){ 
+                    options += '<option value="'+value['task']+'">'+value['task']+'</option>';
+                }
+            });
+            $('.task').html(options); 
+        });
+        // Table
+        
+        var tableHeaders ="";
+
+        $.each(response.tbl_data.columns, function(i, val){
+            if(val=='Task'){ 
+                tableHeaders += '<th><span><i class="fas fa-plus" id="addtaskmodal"></i></span><strong class="ms-3" >' + val + '</strong></th>';
+            }
+            else if (val!='TID'){ 
+                tableHeaders += '<th class="text-center text-nowrap"><strong>' + val + '</strong></th>';
+            }
+            });
+
+        $('#timesheettable').empty();
+
+        $('#timesheettable').append('<thead><tr">'+tableHeaders+'</tr></thead>');
+
+        var k = '<tbody>'
+        if(response.tbl_data.data.length!=0) {   
+            $.each(response.tbl_data.data, function(i, val){
+                k+= '<tr taid='+val[3]+'>';
+                    k+= '<td class="deleterow px-1" style="width:45dvw"><h6 class="m-0">' + val[0] + '</h6> \n ' + val[1] + ' : ' + val[2] + '</td>';
+                    k+= '<td class ="py-2 px-1"><input type="text" value = "'+secondsToHm(val[4])+(secondsToHm(val[4]) !=''?'"class="form-control hours_ text-center text-info" index_no= "':'"class="form-control hours_ text-center" index_no= "')+response.cell_date[0]+'"/></td>';
+                    k+= '<td class ="py-2 px-1"><input type="text" value = "'+secondsToHm(val[5])+(secondsToHm(val[5]) !=''?'"class="form-control hours_ text-center text-info" index_no= "':'"class="form-control hours_ text-center" index_no= "')+response.cell_date[1]+'"/></td>';
+                    k+= '<td class ="py-2 px-1"><input type="text" value = "'+secondsToHm(val[6])+(secondsToHm(val[6]) !=''?'"class="form-control hours_ text-center text-info" index_no= "':'"class="form-control hours_ text-center" index_no= "')+response.cell_date[2]+'"/></td>';
+                    k+= '<td class ="py-2 px-1"><input type="text" value = "'+secondsToHm(val[7])+(secondsToHm(val[7]) !=''?'"class="form-control hours_ text-center text-info" index_no= "':'"class="form-control hours_ text-center" index_no= "')+response.cell_date[3]+'"/></td>';
+                    k+= '<td class ="py-2 px-1"><input type="text" value = "'+secondsToHm(val[8])+(secondsToHm(val[8]) !=''?'"class="form-control hours_ text-center text-info" index_no= "':'"class="form-control hours_ text-center" index_no= "')+response.cell_date[4]+'"/></td>';
+                    k+= '<td class ="py-2 px-1"><input type="text" value = "'+secondsToHm(val[9])+(secondsToHm(val[9]) !=''?'"class="form-control hours_ text-center text-info" index_no= "':'"class="form-control hours_ text-center" index_no= "')+response.cell_date[5]+'"/></td>';
+                    k+= '<td class ="py-2 px-1"><input type="text" value = "'+secondsToHm(val[10])+(secondsToHm(val[10]) !=''?'"class="form-control hours_ text-center text-info" index_no= "':'"class="form-control hours_ text-center" index_no= "')+response.cell_date[6]+'"/></td>';
+                    k+= '<td class ="py-2 px-1"><input type="text" value = "'+secondsToHm(val[11])+'"class="form-control hours_ text-center fw-bold" readonly></td>';
+                k+= '</tr>';
+            });
+            is_tableData = true
+        }else{
+            is_tableData = false
+            k+='<tr><td colspan="9" class="text-center text-info text-uppercase">No tasks assigned to '+"{{request.user.first_name}} !..."+' </td></tr>'
+        }
+
+        k+='</tbody>';
+
+        $('#timesheettable').append(k);
+        
+        if(response.footertotals.length !=0){
+            var l='<tfoot>'
+            l+='<td style="text-align: right;"><strong>Total</strong></td>'
+            $.each(response.footertotals, function(i, val){
+                l+='<td class="py-1 px-1"><input type="text" class="form-control text-center hours_ fw-bold" value="'+secondsToHm(val)+'" readonly ></td>'
+            })       
+            l+='</tfoot>'
+            $('#timesheettable').append(l);
+            weektotal=response.footertotals[7]
+        }
+
+        $('.hours_').attr("disabled",response.submited_status=='Submitted'||response.submited_status=='Accepted'? true : false);
+
+        $('.hours_').attr("placeholder","00.00");
+
+        // $('.hours_').css("height",'36px')
+        $('.fa-plus').css("cursor","pointer")
+        
+       
+        // previewtable
+        $('#previewtable tr').not(function(){ return !!$(this).has('th').length; }).remove();
+
+        var p='<tbody>'
+                p+='<tr><td>Saturday</td><td>'+secondsToHm(response.footertotals[0])+'</td></tr>'
+                p+='<tr><td>Sunday</td><td>'+secondsToHm(response.footertotals[1])+'</td></tr>'
+                p+='<tr><td>Monday</td><td>'+secondsToHm(response.footertotals[2])+'</td></tr>'
+                p+='<tr><td>Tuesday</td><td>'+secondsToHm(response.footertotals[3])+'</td></tr>'
+                p+='<tr><td>Wedensday</td><td>'+secondsToHm(response.footertotals[4])+'</td></tr>'
+                p+='<tr><td>Thursday</td><td>'+secondsToHm(response.footertotals[5])+'</td></tr>'
+                p+='<tr><td>Friday</td><td>'+secondsToHm(response.footertotals[6])+'</td></tr>'
+            p+='</tbody>'
+            p+='<tfoot><tr ><td>Total</td><td class="fw-bold">'+secondsToHm(response.footertotals[7])+'</td></tr></tfoot>'
+
+        $('#previewtable').append(p);
+}
+ 
+})
+    
+    function convertToSeconds(hours =0, minutes=0) {
+        return (
+        Number(hours) * 60 * 60 +
+        Number(minutes) * 60 
+    );
+    }
+    function secondsToHm(seconds) {
+        if (seconds!=0){
+        sec = Number(seconds);
+        var h = Math.floor(sec / 3600);
+        var m = Math.floor(sec % 3600 / 60);
+        return h.toString().padStart(2, '0') +'.'+ m.toString().padStart(2, '0') ; 
+    }
+    else{
+        return ''
+    }
+    }
+
+</script>
+
+<script src="{% static 'js/select2.min.js.js'%}"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+
+{% endblock %}

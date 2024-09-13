@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+	<title>ICPRO</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="{%static  'vendor/bootstrap/css/bootstrap.min.css' %}">
+	<link rel="stylesheet" type="text/css" href="{%static  'fonts/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+	<link rel="stylesheet" type="text/css" href="{%static  'css/util.css' %}">
+	<link rel="stylesheet" type="text/css" href="{%static  'css/main.css' %}">
+   
+   <style>
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+        }
+        
+        /* Firefox */
+        input[type=number] {
+         -moz-appearance: textfield;
+        }
+    </style>
+</head>
+    <body>
+        <div class="limiter">
+            <div class="container-login100">
+                <div class="wrap-login100">				
+                    <div>
+                        <a href='#'>
+                            <img src="{%static  'images/icpro.png' %}" alt="ICPro" style="width:100%">			
+                        </a>
+                        <p style="font-weight: bold;">Industrial Automation & Digitalization</p>	
+                        <br><br><br>
+                        <div style="color: #FF0000;">
+                            {% for message in messages %}
+                                {{message}}
+                            {% endfor %}
+                        </div>	
+                    </div>
+                    <!-- <form id="login_from" method="POST" class="login100-form validate-form"> -->
+                    <form action="{% url 'login_view' %}" method="POST">
+                        {% csrf_token %}
+                        <span class="login100-form-title">
+                            Employee Login Area
+                        </span>
+                        
+                        <div class="wrap-input100 validate-input" data-validate = "Employee Id required">
+                            <input class="input100" type="number" name="username" placeholder="EmpID" value="{{username}}"/>
+                            <span class="focus-input100"></span>
+                            <span class="symbol-input100">
+                                <i class="fa fa-user" aria-hidden="true"></i>
+                            </span>
+                        </div>
+                        <div class="wrap-input100 validate-input" data-validate = "Password is required">
+                            <input class="input100" type="password"  name="password" value="{{password}}" type="password" placeholder="Password">
+                            <span class="focus-input100"></span>
+                            <span class="symbol-input100">
+                                <i class="fa fa-lock" aria-hidden="true"></i>
+                            </span>
+                        </div>
+                        <div class="container-login100-form-btn">
+                            <button type="submit" name="submit" value="Log in" class="login100-form-btn">
+                                Login
+                            </button>
+                        </div>
+                        <div class="text-center p-t-12">
+                            <!-- <span class="txt1">
+                                Forgot
+                            </span> -->
+                            <a class="txt2" href="{% url 'reset_password' %}">
+                                Forgot Password
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script src="{%static  'vendor/jquery/jquery-3.2.1.min.js' %}"></script>
+        <script src="{%static  'vendor/bootstrap/js/popper.js' %}"></script>
+        <script src="{%static  'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+        <script src="{%static  'vendor/tilt/tilt.jquery.min.js' %}"></script>
+        <script >
+            $('.js-tilt').tilt({
+                scale: 1.1
+            })
+        </script>
+        <script src="{%static  'js/main.js' %}"></script>
+    </body>
+</html>

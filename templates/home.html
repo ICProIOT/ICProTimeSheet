@@ -1,0 +1,108 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} 
+{% block home_active %}active{% endblock %}
+{% load static %}
+{% block main-content %}
+{% block Head %}
+
+<style>
+    .card-body
+    {
+        display:flex;
+        justify-content: center;
+        align-items: center;
+    }
+    /* i.bi  */
+    .card-nav
+    {
+        font-size: 25px;
+        padding-top: 14dvh;
+    }
+   
+    .card-text
+    {
+        display:flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .card img
+    {
+        height:21dvh;
+    }
+    @media (max-width: 1366px) {
+        .card
+        {
+            width: 250px;
+        }
+        .card-nav
+        {
+            font-size: 20px;
+            padding-top: 13dvh;
+        }
+    }
+</style>
+{% endblock %}
+
+<div class="container card-nav">
+    <div class="row justify-content-center">
+        <div class="card m-4 col-lg-3 col-md-6 col-sm-10" >
+            <a href="/timeline/">
+                <img class="card-img-top" src="{% static 'assets/images/timesheet.jpg'%}" alt="Card image cap">
+                <div class="card-body py-1">
+                    <p class="card-text"><i class="bi bi-clock me-1"></i>Timesheet</p>
+                </div>
+            </a>
+        </div>
+        <div class="card m-4 col-lg-3 col-md-6 col-sm-10" onclick="{alert('Under development!')}" > <!--  -->
+            <!-- <a href="/projects/list-projects"> -->
+                <img class="card-img-top" src="{% static 'assets/images/PMO.jpg'%}" alt="Card image cap">
+                <div class="card-body py-1 ">
+                    <p class="card-text"><i class="bi bi-list-task me-1"></i> Project</p>
+                </div>
+            <!-- </a> -->
+        </div>
+        <div class="card m-4 col-lg-3 col-md-6 col-sm-10">
+            <a  href="/timeline/timesheet_analysis">
+                <img class="card-img-top" src="{% static 'assets/images/analysis.jpg'%}" alt="Card image cap">
+                <div class="card-body py-1">
+                    <p class="card-text"><i class="bi bi-bar-chart me-1"></i>Analysis</p>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="card m-4 col-lg-3 col-md-6 col-sm-10">
+            <a  href="/file_management/Documents">
+                <img class="card-img-top" src="{% static 'assets/images/Documement.png'%}" alt="Card image cap">
+                <div class="card-body py-1" >
+                    <p class="card-text"><i class="bi bi-file-earmark-richtext me-1"></i>Document</p>
+                </div>
+            </a>
+        </div>
+        <div class="card m-4 col-lg-3 col-md-6 col-sm-10" onclick="navigatefun('/employee/employee-details')">
+            <!-- <a href="/employee/employee-details"> -->
+                <img class="card-img-bottom pt-3" src="{% static 'assets/images/Designation.png'%}" alt="Card image cap">
+                <div class="card-body py-1">
+                    <p class="card-text"><i class="bi bi-person me-1"></i>User</p>
+                </div>
+            <!-- </a> -->
+        </div>
+        <div class="card m-4 col-lg-3 col-md-6 col-sm-10" onclick="navigatefun('/projects/list-templates')">
+            <!-- <a  href="/projects/list-templates"> -->
+                <img class="card-img-top " src="{% static 'assets/images/settings.jpg'%}" alt="Card image cap">
+                <div class="card-body py-1" >
+                    <p class="card-text"><i class="bi bi-gear me-1"></i>Settings</p>
+                </div>
+            <!-- </a> -->
+        </div>
+    </div>
+</div>
+<script>
+    function navigatefun(url)
+        { 
+            if("{{request.user.role}}" != 'Employee'){
+                location.href = url }
+            else {
+                alert("Sorry You are not authorized!")}
+        }
+</script>
+{% endblock %}

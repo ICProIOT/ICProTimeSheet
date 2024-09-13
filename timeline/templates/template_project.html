@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}list Templates{% endblock %}
+
+{% block projectlist_active %}active{% endblock %}
+
+{% block Head %}
+
+<style>
+.table-responsive {
+    max-height:81dvh;
+}
+</style>
+{% endblock %}
+{% block main-content %}
+<div class="card ">
+    <div class="card-header "><span>Project :</span>
+     <a href="{% url 'time_managemnet' %}" class="text-info"> {{project_name}}</a>
+    </div>
+    <div class="card-body ">
+        <div class="tabel-responsive">
+            <table id="tabledata" class="table table-sm table-striped table-hover table-bordered" width="100%">
+                <thead>
+                    <th>Milestone</th>
+                    <th>Task</th>
+                    <th>Budget hours</th>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+ $(document).ready( function () {
+    $.post("{% url 'tabledata_project'%}",{id:"{{id}}"},
+        function(response){
+            load_data(response)
+        })
+} );  
+
+$(document).on('click', '.row_data', function(e) {
+    e.preventDefault();
+    //make div editable
+    $(this).closest('td').attr('contenteditable', 'true');
+    //add bg css
+    $(this).addClass('bg-light').css('padding','5px');
+    $(this).focus();
+});
+
+$(document).on('keypress', '.row_data', function(event) 
+{
+    // event.preventDefault();
+    if(event.which == 13){
+        var id = $(this).closest('tr').attr('id');
+
+        var row_div = $(this)			
+        .removeClass('bg-light') //add bg css
+        .css('padding','')
+
+        var col_name = row_div.attr('col_name'); 
+        var col_val = row_div.html(); 
+        var arr_ = {};
+        arr_[col_name] = col_val.replace("&nbsp;","");
+
+        //use the "arr"	object for your ajax call
+        $.extend(arr_,{p_id:'{{id}}'});
+        $.extend(arr_,{id:id});
+        $.post("{% url 'edit_tabledata'%}",arr_,
+            function(response){
+                if(response.status =="OK"){
+                $.post("{% url 'tabledata_project'%}",{id:response.id},
+                function(response){
+                    load_data(response)
+                })}
+        })
+    }
+    
+});
+
+function load_data(response){
+    $('#tabledata tr').not(function(){ return !!$(this).has('th').length; }).remove();
+    var k = '<tbody id = "_tbody">'
+    var temp = ""
+    $.each(response.tasklist, function(i, val){
+        k+= val['mid__milestone']==temp?'<tr id = '+val['id']+'><td></td>':
+            '<tr id= '+val['id']+ ' class="milestone-row"><td><i class="fas fa-chevron-right me-2 toggle"></i>'+val['mid__milestone']+'</td>'
+        k+= '<td>'+val['task']+'</td>'
+        k+= (val['quotted_hours'] !=null)?'<td class="row_data" col_name="quotted_hours">'+ val['quotted_hours']+'</td>':
+                                            '<td class="row_data" col_name="quotted_hours"> 0 </td>'
+        k+= '</tr>';
+        temp=val['mid__milestone']
+    });
+    k+='</tbody><tfoot><td colspan=2 class="text-end">Total</td><td>'+response.budget_totalhrs.budgettotal+'</td></tfoot>';
+    $('#tabledata').append(k);
+}
+
+$('#tabledata').on("click","tr .toggle",function() {
+
+$(this).closest('tr').nextUntil('.milestone-row').toggle();});
+</script>
+{% endblock %}

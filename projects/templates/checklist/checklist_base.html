@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+{% block title %}Checklist {% endblock %}
+{% block main-content %}
+    {% block checklist_view %}
+    <div class="row">
+        <div class="col-12 col-lg-12 border-bottom px-2 py-1 mb-1">
+            <h6><a style="color:rgb(9, 139, 172);" href="/projects/list-checklist">Checklists </a> -> <strong>{{current_checklist.name|capfirst}}</strong></h6>
+        </div>
+    </div>
+    {% endblock %}
+    <div class="row">
+        <div class="col-12 col-lg-2">
+            <div class="card">
+                <div class="card-body px-2 py-1 ">
+                    {% block add_edit_section %}
+                    <div class="d-flex align-items-end justify-content-end">
+                        {% if user.groups.all.0.name == 'Admin' %}
+                        <div class="px-2"><a href=""data-bs-toggle="modal" data-bs-target="#New_Section_Modal" style="color:rgb(9, 139, 172);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder-plus" viewBox="0 0 16 16">
+                        <path d="m.5 3 .04.87a1.99 1.99 0 0 0-.342 1.311l.637 7A2 2 0 0 0 2.826 14H9v-1H2.826a1 1 0 0 1-.995-.91l-.637-7A1 1 0 0 1 2.19 4h11.62a1 1 0 0 1 .996 1.09L14.54 8h1.005l.256-2.819A2 2 0 0 0 13.81 3H9.828a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 6.172 1H2.5a2 2 0 0 0-2 2Zm5.672-1a1 1 0 0 1 .707.293L7.586 3H2.19c-.24 0-.47.042-.683.12L1.5 2.98a1 1 0 0 1 1-.98h3.672Z"/>
+                        <path d="M13.5 9a.5.5 0 0 1 .5.5V11h1.5a.5.5 0 1 1 0 1H14v1.5a.5.5 0 1 1-1 0V12h-1.5a.5.5 0 0 1 0-1H13V9.5a.5.5 0 0 1 .5-.5Z"/>
+                        </svg>
+                        </a></div>
+                        {% comment %} <div class="px-2"><a href=""data-bs-toggle="modal" data-bs-target="#New_Section_Modal" style="color:rgb(9, 139, 172);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-slash-minus" viewBox="0 0 16 16">
+                        <path d="m1.854 14.854 13-13a.5.5 0 0 0-.708-.708l-13 13a.5.5 0 0 0 .708.708ZM4 1a.5.5 0 0 1 .5.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2A.5.5 0 0 1 4 1Zm5 11a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5A.5.5 0 0 1 9 12Z"/>
+                        </svg>
+                        </a></div> {% endcomment %}
+                        {% endif %}
+                    </div>
+                    {% endblock %}
+                    <div class="fm-menu">
+                    
+                        <div class="border-bottom"><h5 class="mb-0"><strong>Sections</strong></h5></div>
+                    
+            
+                        {% block sections_view %}
+                        
+                        {% endblock %}
+                    </div>
+			    </div>
+            </div>
+        </div>
+        <!--Add Questions -->
+        <div class="col-12 col-lg-10 ">
+            <div class="card">
+                <div class="card-body px-3 py-2 ">
+                    {% block add_edit_question %}
+                    {% if sel_sections|length > 0 %}
+                    <div class="d-flex justify-content-end">
+                    {% if user.groups.all.0.name == 'Admin' %}
+                        <div class="px-2"><a href=""data-bs-toggle="modal" data-bs-target="#New_Question_Modal" style="color:rgb(9, 139, 172);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder-plus" viewBox="0 0 16 16">
+                        <path d="m.5 3 .04.87a1.99 1.99 0 0 0-.342 1.311l.637 7A2 2 0 0 0 2.826 14H9v-1H2.826a1 1 0 0 1-.995-.91l-.637-7A1 1 0 0 1 2.19 4h11.62a1 1 0 0 1 .996 1.09L14.54 8h1.005l.256-2.819A2 2 0 0 0 13.81 3H9.828a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 6.172 1H2.5a2 2 0 0 0-2 2Zm5.672-1a1 1 0 0 1 .707.293L7.586 3H2.19c-.24 0-.47.042-.683.12L1.5 2.98a1 1 0 0 1 1-.98h3.672Z"/>
+                        <path d="M13.5 9a.5.5 0 0 1 .5.5V11h1.5a.5.5 0 1 1 0 1H14v1.5a.5.5 0 1 1-1 0V12h-1.5a.5.5 0 0 1 0-1H13V9.5a.5.5 0 0 1 .5-.5Z"/>
+                        </svg>
+                        <span>Create New </span></a></div>
+                        {% comment %} <div class="px-2"><a href=""data-bs-toggle="modal" data-bs-target="#Add_Question_Modal" style="color:rgb(9, 139, 172);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-slash-minus" viewBox="0 0 16 16">
+                        <path d="m1.854 14.854 13-13a.5.5 0 0 0-.708-.708l-13 13a.5.5 0 0 0 .708.708ZM4 1a.5.5 0 0 1 .5.5v2h2a.5.5 0 0 1 0 1h-2v2a.5.5 0 0 1-1 0v-2h-2a.5.5 0 0 1 0-1h2v-2A.5.5 0 0 1 4 1Zm5 11a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5A.5.5 0 0 1 9 12Z"/>
+                        </svg>
+                        <span>Add/Remove</span></a>
+                        </div> {% endcomment %}
+                    {% endif %}
+                    </div> 
+                    {% endif %}
+                    {% endblock %}
+                    <div class="fm-menu">
+                        <div class="border-bottom"><h5 class="mb-0"><strong>Questions</strong></h5></div>
+                        <div class="table-responsive ">
+                            <div class=" table-wrapper-scroll-y my-custom-scrollbar">
+                            {% block question_view %}
+                                
+                            {% endblock %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--Add Question Modal -->
+<div class="modal fade" id="Add_Question_Modal" tabindex="-1" aria-labelledby="Add_Question_Modal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+    <div class="modal-content">
+            <div class="modal-header sb-sidenav-dark">
+                <h5 class="modal-title" id="exampleModalLabel" style="color: honeydew;">Add Question</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body " >
+                <form  method="POST" autocomplete="off">
+                    {% csrf_token %}
+                    <label class="form-label" for="name">Available Questions</label>
+                    <div class="justify-content-around row mb-3" style="max-height:360px; overflow-y:auto; overflow-x:hidden">
+                        <div class="col-12 col-md-6 col-lg-12">
+                            {% for question in sel_questions %}
+                            <div class="form-outline">
+                                <input type="checkbox" checked name="{{question.id}}" checked>
+                                <label class="form-label" for="name">{{question.question|capfirst}}</label>
+                            </div>
+                            {% endfor %}
+
+                            {% for question in questions %}
+                            <div class="form-outline">
+                                <input type="checkbox" {{question.id}} name="{{question.id}}">
+                                <label class="form-label" for="name">{{question.question|capfirst}}</label>
+                            </div>
+                            {% endfor %}
+                        </div>  
+                    </div>                     
+                    <!-- submit -->
+                    <div class="justify-content-around row">  
+                        <div class="col-6 col-md-6 col-lg-6 " >
+                            <button type="submit" name="add_question" class="form-control" style="background-color: #41A8B9;">Update</button> 
+                        </div>
+                    </div> 
+                </form>
+            </div>          
+        </div>
+    </div>
+</div>
+
+<!--Create Section Modal -->
+<div class="modal fade" id="New_Section_Modal" tabindex="-1" aria-labelledby="New_Section_Modal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+      <div class="modal-content">
+            <div class="modal-header sb-sidenav-dark">
+                <h5 class="modal-title" id="exampleModalLabel" style="color: honeydew;">Create New Section</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body overflow-auto" style="max-height:460px">
+                <form  method="POST" id="new-section-form" autocomplete="off">
+                    {% csrf_token %}
+                    <!--Project name-->
+                    <div class="justify-content-around row ">
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="form-outline">
+                                <input type="text" class="form-control border mb-2"  id="section_name" name="section_name" value="" required>
+                                <label class="form-label" for="name">Section Name</label>
+                            </div>
+                        </div>  
+                    </div>                     
+                    <!-- submit -->
+                    <div class="justify-content-around row">  
+                        <div class="col-6 col-md-6 col-lg-6 " >
+                            <button type="submit" name="new_section" class="form-control" style="background-color: #41A8B9;">Add</button> 
+                        </div>
+                    </div> 
+                </form>
+            </div>          
+        </div>
+    </div>
+</div>
+
+<!--Add/Remove Section Modal -->
+<div class="modal fade" id="Add_Section_Modal" tabindex="-1" aria-labelledby="Add_Section_Modal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+      <div class="modal-content">
+            <div class="modal-header sb-sidenav-dark">
+                <h5 class="modal-title" id="exampleModalLabel" style="color: honeydew;">Add/Remove Section</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height:460px" >
+                <form  method="POST" autocomplete="off">
+                    {% csrf_token %}
+                    <!--Project name-->
+                    <label class="form-label" for="name">Available Sections</label>
+                    <div  style="max-height:360px; overflow-y:auto; overflow-x:hidden">
+                    {% for section in sel_sections  %}
+                        <div class="justify-content-around row ">
+                            <div class="col-12 col-md-6 col-lg-12">
+                                <input type="checkbox"   id="fname" name="{{section.id}}" checked>
+                                <label class="form-label" for="name">{{section.name|title}}</label>
+                            </div>  
+                        </div>  
+                    {% endfor %} 
+                    {% for section in sections  %}
+                        <div class="justify-content-around row ">
+                            <div class="col-12 col-md-6 col-lg-12">
+                                <input type="checkbox"   id="fname" name="{{section.id}}">
+                                <label class="form-label" for="name">{{section.name|title}}</label>
+                            </div>  
+                        </div>  
+                    {% endfor %}       
+                    </div>            
+                    <!-- submit -->
+                    <div class="justify-content-around mb-3 row">  
+                        <div class="col-6 col-md-6 col-lg-6 " >
+                            <button type="submit" name="add_section" class="form-control" style="background-color: #41A8B9;">Update</button> 
+                        </div>
+                    </div> 
+                </form>
+            </div>          
+        </div>
+    </div>
+</div>
+
+<!--New Question Modal -->
+<div class="modal fade" id="New_Question_Modal" tabindex="-1" aria-labelledby="New_Question_Modal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+      <div class="modal-content">
+            <div class="modal-header sb-sidenav-dark">
+                <h5 class="modal-title" id="exampleModalLabel" style="color: honeydew;">New Question</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body " style="max-height:460px">
+                <form  method="POST" autocomplete="off" id="new-question" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <!--Project name-->
+                    <div  style="max-height:400px; overflow-y:auto; overflow-x:hidden">
+                        <div class="justify-content-around row mb-3 ">
+                            <div class="col-12 col-md-6 col-lg-12">
+                                <div class="form-outline">
+                                    <label class="form-label" for="fname">Question Text</label>
+                                    <input type="text" class="form-control border"  id="fname" name="question" value="{{form.question.value|safe}}" required>
+                                    
+                                </div>
+                            </div>  
+                        </div>                     
+                        <!-- Question Type -->
+                        <div class="justify-content-around row mb-3">
+                            <div class="col-6 col-md-6 col-lg-12">
+                                <div class="form-outline">
+                                <label class="form-label" for="customFile">Question Type</label>
+                                    <select class="form-select form-select-lg mb-3" id="select_question_option" name="type" aria-label=".form-select-lg example">
+                                    {% comment %} <option selected>Open this select menu</option> {% endcomment %}
+                                    <option value="radio" selected>Radio Button</option>
+                                    <option value="text">Text Field</option>
+                                    
+                                    </select>
+                                </div>
+                                <div class="form-outline">
+                                    <label class="form-label" for="customFile">Attachment</label>
+                                    <input type="file" class="form-control border" id="customFile" name="file_name" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="justify-content-around row mb-3">
+                            <div class="col-6 col-md-6 col-lg-12">
+                                <div id="div_option_outer" class="form-outline">
+                                    
+                                    <label class="form-label" for="estimated_hrs">Answer Options</label>
+                                    
+                                    <div class="option" id="div_option">
+                                        <div id="opt1">
+                                        <label class="form-label" id="option_label1" for="option1">Option 1:</label>
+                                        <input type="text" class="form-control border" id="option1" value="{{form.type.value|safe}}" name="options" required>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <svg id="add_option" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-plus-square add_option" viewBox="0 0 16 16">
+                                            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                        </svg>
+                                        <svg id="remove_option" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-dash-square remove_option" viewBox="0 0 16 16">
+                                            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                                            <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- submit -->
+                    <div class="justify-content-around mb-3 row">  
+                        <div class="col-6 col-md-6 col-lg-12 " >
+                            <button type="submit" name="new_question" class="form-control" style="background-color: #41A8B9;">Add</button> 
+                        </div>
+                    </div> 
+                </form>
+            </div>          
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    // Function to handle file validation
+    function validateFile() {
+      var fileInput = document.getElementById('customFile');
+      var file = fileInput.files[0];
+  
+      // File type validation
+      var allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please select a valid file type (JPEG, PNG, PDF).');
+        fileInput.value = ''; // Clear the file input
+        return false;
+      }
+  
+      // File size validation (in bytes)
+      var maxSize = 10 * 1024 * 1024; // 10 MB
+      if (file.size > maxSize) {
+        alert('File size exceeds the maximum limit of 10 MB.');
+        fileInput.value = ''; // Clear the file input
+        return false;
+      }
+  
+      // File is valid
+      return true;
+    }
+  
+    // Add event listener to the file input
+    document.getElementById('customFile').addEventListener('change', validateFile);
+</script>
+<script>
+    var option_cnt = 1;
+    $(document).ready(function(){
+
+        var myDropdown = document.getElementById("select_question_option");
+        var myElement = document.getElementById("div_option_outer");
+
+        function handle_edit_options(myDropdown,myElement){
+            console.log(option_cnt,"this is option count")
+                if (myDropdown.value === "text") {
+                    myElement.style.display = "none";
+                    for (var i=1;i<=option_cnt;i++){
+                        $("#option"+i.toString()).attr('required',false);
+                        $("#option"+i.toString()).attr('value','');
+                        console.log($("#option"+i.toString()));
+                    }
+                } else {
+                    myElement.style.display = "block";
+                    for (var i=1;i<=option_cnt;i++){
+                        $("#option"+i.toString()).attr('required',true);
+                        $("#option"+i.toString()).attr('value','');
+                        console.log($("#option"+i.toString()));
+                }
+            }
+        }
+        
+        myDropdown.addEventListener("change", function() {handle_edit_options(myDropdown,myElement);  });
+
+      $("#add_option").click(function(){
+        option_cnt = option_cnt+1;
+        $(".option").append('<div id="opt'+option_cnt.toString()+'">'+
+        '<label id="option_label'+option_cnt.toString()+'" for="option'+option_cnt.toString()+'"> Option '+ option_cnt.toString()+':</label>'+
+        '<input type="text" class="form-control border" id="option'+option_cnt.toString()+'" value="{{form.type.value|safe}}" name="options" required>'
+        );
+      });
+
+     $("#remove_option").click(function(){
+        if(option_cnt > 1){
+        var myDiv = document.getElementById("div_option");
+        //console.log('removed last child')
+        var lastChild = myDiv.lastChild;
+        myDiv.removeChild(lastChild); 
+        option_cnt = option_cnt-1;
+        }
+     });
+
+    });
+</script>
+
+<!-- handle edit new section name -->
+<script type="text/javascript">
+
+    // Function to validate section name
+    function validateNewSectionName(event) {
+        event.preventDefault(); // Prevent the form from submitting automatically
+        var sectionName = event.target.elements.section_name.value;;
+        
+        // Make an API request to check if the section name already exists
+        fetch("/projects/checklist/validate-section-name", {
+            method: "POST",
+            body: JSON.stringify({ checklist_id: {{current_checklist.id}},
+                                   section_name: sectionName.toLowerCase() }),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                "Content-Type": "application/json",
+            },
+        })
+        .then(function(response) {
+            var data = response.json()
+            console.log(response)
+            return data;
+        })
+        .then(function(data) {
+            if (data.status == "exists") {
+                // Section name already exists, show an error message or take appropriate action
+                alert("Section name already exists. Please choose a different name.");
+            } else {
+
+                // Section name is valid, proceed with form submission or take appropriate action
+                var editSectionInput = document.createElement('input');
+                editSectionInput.type = 'hidden';
+                editSectionInput.name = event.submitter.name;
+                editSectionInput.value = '';
+                event.target.appendChild(editSectionInput);
+                event.target.submit();
+            }
+        })
+        .catch(function(error) {
+            // Handle any error that occurred during the API request
+            console.error("Error:", error);
+        });
+    }
+    // Attach the validateSectionName function to the form's submit event
+    document.getElementById("new-section-form").addEventListener("submit", validateNewSectionName);
+
+</script>
+
+<!-- validate question name -->
+<script type="text/javascript">
+
+    // Function to validate section name
+    function validateNewQuestionName(event) {
+        event.preventDefault(); // Prevent the form from submitting automatically
+        var question = event.target.elements.question.value;
+        
+        // Make an API request to check if the section name already exists
+        fetch("/projects/checklist/validate-question-name", {
+            method: "POST",
+            body: JSON.stringify({ checklist_id: {{current_checklist.id}},
+                                   question: question.toLowerCase(),
+                                   section_id: {{current_section.id}} }),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                "Content-Type": "application/json",
+            },
+        })
+        .then(function(response) {
+            var data = response.json()
+            return data;
+        })
+        .then(function(data) {
+            if (data.status == "exists") {
+                // Section name already exists, show an error message or take appropriate action
+                alert("Question already exists. Please enter a new one!");
+            } else {
+
+                // Section name is valid, proceed with form submission or take appropriate action
+                var questionInput = document.createElement('input');
+                questionInput.type = 'hidden';
+                questionInput.name = event.submitter.name;
+                questionInput.value = '';
+                event.target.appendChild(questionInput);
+                event.target.submit();
+            }
+        })
+        .catch(function(error) {
+            // Handle any error that occurred during the API request
+            console.error("Error:", error);
+        });
+    }
+    // Attach the validateSectionName function to the form's submit event
+    document.getElementById("new-question").addEventListener("submit", validateNewQuestionName);
+    
+</script>
+{% endblock %}

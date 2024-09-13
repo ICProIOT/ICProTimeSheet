@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Projects new{% endblock %}
+
+{% block projectlist_active %}active{% endblock %}
+
+{% block main-content %}
+<!-- table For Projects  -->
+<div class="card ">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="col-6">
+            <i class="fas fa-table"></i> <strong>Projects Details</strong>
+            <span class="mx-4"><a href=""data-bs-toggle="modal" data-bs-target="#Add_project_Modal" style="color:rgb(9, 139, 172);">+ Add Project</a> </span>
+        </div>
+       <div class="d-flex col-6 justify-content-end align-items-center">
+            <div class="col-6 col-md-4 col-lg-3">
+                <label class="form-group border-lable-flt">
+                    <select id="department_" class="form-select"></select>
+                    <span class="form-label">Department</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="card-body table-responsive">
+        <div class="col-2">
+            <input class="form-control" id="searchinput" type="text" placeholder="Search..">
+        </div>
+        <table id="project_table" class="table table-sm table-hover table-bordered table-striped" style="width: 100%;">
+            <thead>
+                <th>Project Name</th>
+                <th>Code</th>
+                <th>Department</th>
+                <th>Hours</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </thead>
+        </table>
+    </div>
+</div>
+   
+<!--Add Project Modal -->
+<div class="modal fade" id="Add_project_Modal" tabindex="-1" aria-labelledby="Add_project_Modal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+      <div class="modal-content">
+            <div class="modal-header ">
+                <h5 class="modal-title" id="exampleModalLabel" >Add Project <span id="departmentText"></span></h5>
+                <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- <form action="/timeline/createproject/" method="POST" autocomplete="off"> -->
+                <form action="" id="projectForm" autocomplete="off">
+                    {% csrf_token %}
+                    <!--Project name-->
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="form-outline">
+                                <input type="text" class="form-control"  id="fname" name="name" value="{{form.name.value|safe}}" required>
+                                <label class="form-label" for="name">Project Name</label>
+                            </div>
+                        </div>  
+                    </div>  
+                    <!--Project_id,department-->
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-outline">
+                                <input type="text" class="form-control" name="p_code" value="{{form.p_code.value|safe}}" required>
+                                <label class="form-label" for="p_code">Code</label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-outline">
+                                <input type="text" class="form-control" id="dept" value="" name="department" readonly>
+                                <label class="form-label" for="department">Department</label>
+                            </div>
+                        </div>
+                    </div>
+                   
+                    <!-- Estimated Hours,active -->
+                    <div class="justify-content-end row mb-3">
+                        <!-- <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-check">
+                                {% if not form.is_active.value  %}
+                                <input class="form-check-input" type="checkbox"  id="avtiveStatus"  name="is_active" checked>
+                                {% else %}
+                                <input class="form-check-input" type="checkbox"  id="avtiveStatus"  name="is_active" >
+                                {% endif %}
+                                <label class="form-check-label" for="avtiveStatus">Active</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="justify-content-end mb-2 row">   -->
+                        <div class="col-6 col-md-6 col-lg-6" >
+                            <button type="submit" id="createProject" class="form-control bg-info">SUBMIT</button> 
+                        </div>
+                    </div> 
+                </form>
+            </div>          
+        </div>
+    </div>
+</div>
+
+
+<!--Edit Project Modal -->
+<div class="modal fade" id="Edit_Modal" tabindex="-1" aria-labelledby="Add_project_Modal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header ">
+                <h5 class="modal-title" id="exampleModalLabel" >Edit Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="col-12 col-md-12 col-lg-12">
+                    <div class="form-outline">
+                        <input type="text" class="form-control" id="pname" required>
+                        <label class="form-label" for="name">Project Name</label>
+                    </div>
+                </div>  
+                <div class="d-flex my-2" >
+                    <div class="col-6 col-md-6 col-lg-6 pe-2">
+                        <label class="form-group border-lable-flt">
+                            <select class="form-control custom-select" id="department_E" required>
+                            </select>
+                            <span class="form-label">Department</span>
+                        </label>
+                    </div>
+                    <!-- <div class="col-6 col-md-6 col-lg-6 ps-2">
+                        <div class="form-outline">
+                            <input type="text" class="form-control" readonly id="budgethours" required>
+                            <label class="form-label" for="name">Budget hours</label>
+                        </div>
+                    </div> -->
+                    <div class="col-6 col-md-6 col-lg-6 ps-2">
+                        <div class="form-outline">
+                            <input type="text" class="form-control" id="p_code_e" required>
+                            <label class="form-label" for="p_code_e">Code</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- submit -->
+                <div class="justify-content-end mb-2 row">  
+                    <label class="col-6 col-md-6 col-lg-6" style="display: none;" id="pid" for="pid"></label>
+                    <div class="col-6 col-md-6 col-lg-6">
+                        <button type="submit" class="form-control bg-info edit_project">UPDATE</button> 
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--  end Add checklist Modal -->
+<script type="text/javascript">
+    $(document).ready( function () {
+        $.ajax({
+            type:"GET",
+            url:"{% url 'proj_tabledata'%}",
+            dataType:"json",
+            success:function(response)
+            {
+                load_tabledata(response)
+                var department_list = "";
+                $.each(response.dept_groups, function(index, value) {
+                    department_list +='<option value="'+value+'">'+value+'</option>';
+                });
+                $('#department_').append( department_list );
+                $('#department_E').append( department_list );
+                document.getElementById('dept').value = response.dept_groups[0];
+                $('#departmentText').html("Under "+response.dept_groups[0]);
+            }
+        });
+    }); 
+
+    $('#projectForm').submit(function (event){
+        event.preventDefault();
+            $.ajax({
+            type:"POST",
+            url:"{% url 'proj_tabledata'%}",
+            data :$('#projectForm').serialize(),
+            dataType:"json",
+            headers:{'X-CSRFToken':'{% csrf_token %}'},
+            success:function(response)
+            {   
+                if(response.formError)
+                {
+                    alert(response.formError)
+                }
+                else
+                {
+                    load_tabledata(response)
+                    $('.btn-close').click();
+                }
+                
+            }
+        });
+
+    });
+
+    $('#department_').on("change",function(){
+        var department = $("#department_ :selected").text();
+        $('#departmentText').html("Under "+department);
+        document.getElementById('dept').value =department;
+        var arr = {};
+        arr['department'] = department;
+        $.extend(arr,{mode:"dept_change"});
+        $.post("{% url 'proj_tabledata'%}",arr,
+        function(response){
+            load_tabledata(response);
+        })
+    }); 
+
+    //ajax post function for edit
+    function ajax_post_edit(data){
+        $.ajax({
+            type:"POST",
+            url:"{% url 'proj_tabledata'%}",
+            data:data,
+            dataType:"json",
+            success:function(response)
+            {
+                load_tabledata(response)
+            }
+        });
+    }
+
+    // editproject icon click
+    $(document).on('click', '.editproject', function(e){
+        $("#pname").val($(this).closest('tr').find('td.pname').html())
+        // $("#budgethours").val($(this).closest('tr').find('td.budget_hours').html())
+        $("#pid").html($(this).closest('tr').attr('pid'))
+        $("#department_E").val($("#department_").val())
+        $("#p_code_e").val($(this).closest('tr').find('td.proj_code').html())
+    })
+
+    $("#fname").keypress(function (e) {
+        var key = e.keyCode || e.which;       
+        //Regular Expression
+        var reg_exp = /^[A-Za-z0-9 _]+$/;
+        //Validate Text Field value against the Regex.
+        var is_valid = reg_exp.test(String.fromCharCode(key));
+        if (!is_valid) {
+            alert("No special characters Please!!! Only Under score")
+        }
+        return is_valid;
+      });
+
+      //edit project button in modal
+    $(document).on('click', '.edit_project', function(e){
+        e.preventDefault();
+        var pname=$("#pname").val()
+        var department=$("#department_E").val()
+        var project_code=$("#p_code_e").val()
+        var pid=$("#pid").html()
+        ajax_post_edit({name:pname,department:department,project_code:project_code,pid:pid,mode:"update"})
+        $('.btn-close').click();
+    })
+
+    //delete project
+    $(document).on('click', '.deleteproject', function(e)
+        {
+        if(confirm("Do you want to delete?")){
+            var pid = $(this).closest('tr').attr('pid');
+            var arr_ = {};
+            arr_["mode"] = "delete";
+            var department=$("#department_").val()
+            //use the "arr" object for your ajax call
+            $.extend(arr_,{pid:pid,mode:'delete',department:department});
+            $.post("{% url 'proj_tabledata'%}",arr_,
+            function(response){
+                load_tabledata(response)
+            })
+        }
+        })
+
+    function load_tabledata(response){
+        
+        $('#project_table tr').not(function(){ return !!$(this).has('th').length; }).remove();
+        var k = '<tbody>'
+        $.each(response.proj_list, function(i, val){
+            k+= '<tr pid='+ val['id']+'>'
+                k+= '<td class="text-info pname"  onclick="myFunction('+val["id"]+')"style="cursor:pointer">'+val['name']+'</td>'
+                k+= '<td class="proj_code">'+val['p_code'] +'</td>'
+                k+= '<td>'+val['department'] +'</td>'
+                k+= (val['budget_hours'] != null)?'<td class="budget_hours">'+val['budget_hours']+'</td>':'<td class="budget_hours">0</td>'
+                k+='<td><i class="fas fa-edit text-primary editproject" data-bs-toggle="modal" data-bs-target="#Edit_Modal"></i></td>'
+                k+='<td><i class="fas fa-minus-circle text-warning deleteproject"></i></td>'
+            k+= '</tr>';
+        });
+        k+='</tbody>';
+        $('#project_table').append(k);
+    };
+
+    $(document).ready(function(){
+        $("#searchinput").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            $("#project_table tr").filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+    function myFunction(id) {
+        location.href ='/timeline/template_project/'+id;onclick="myFunction('+val['id']+')"
+    }
+</script>
+{% endblock %}

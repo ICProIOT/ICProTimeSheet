@@ -1,0 +1,232 @@
+{% extends "checklist/checklist_base.html" %}
+{% block checklist_view %}
+    <div class="row">
+        <div class="col-12 col-lg-12 border-bottom px-2 py-1 mb-1">
+            <div class="d-flex justify-content-between"> 
+                <div> <h6> <a style="color:rgb(9, 139, 172);" href="/projects/list-projects">Projects </a> -> {{project.name|capfirst}} -> {{current_checklist.name|capfirst}}</h6> </div>
+                <div class="vr mx-2"></div>
+                <div class="align-self-center" style="width:95%">
+                    <div class="d-flex flex-wrap mb-1 justify-content-start" >
+                        {% for checklist in checklists %}
+                            {% if checklist.section.all|length > 0%}
+                            {% if audit %}
+                                {% if checklist.id == current_checklist.id %}
+                                    <h6><a class="px-2" style="color:rgb(9, 139, 172);"  href="/projects/audit/{{project.id}}/{{checklist.id}}/audit">{{checklist.name|capfirst}}</a></h6>
+                                {% else %}
+                                    <h6><a class="px-2"  style="color:#262626;" href="/projects/audit/{{project.id}}/{{checklist.id}}/audit">{{checklist.name|capfirst}}</a></h6>
+                                {% endif %}
+                            {% else %}
+                                {% if checklist.id == current_checklist.id %}
+                                    <h6><a class="px-2" style="color:rgb(9, 139, 172);"  href="/projects/answer/{{project.id}}/{{checklist.id}}/">{{checklist.name|capfirst}}</a></h6>
+                                {% else %}
+                                    <h6><a class="px-2" style="color:#262626;" href="/projects/answer/{{project.id}}/{{checklist.id}}/">{{checklist.name|capfirst}}</a></h6>
+                                {% endif %}
+                            {% endif %}
+                            {% if forloop.last %}
+                            {% else %}
+                            <h6>|</h6>
+                            {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="vr mx-1"></div>
+                <div>
+                <a style="color:rgb(9, 139, 172);" href="/projects/report/download/{{project.id}}/">
+                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-filetype-pdf" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M14 4.5V14a2 2 0 0 1-2 2h-1v-1h1a1 1 0 0 0 1-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5L14 4.5ZM1.6 11.85H0v3.999h.791v-1.342h.803c.287 0 .531-.057.732-.173.203-.117.358-.275.463-.474a1.42 1.42 0 0 0 .161-.677c0-.25-.053-.476-.158-.677a1.176 1.176 0 0 0-.46-.477c-.2-.12-.443-.179-.732-.179Zm.545 1.333a.795.795 0 0 1-.085.38.574.574 0 0 1-.238.241.794.794 0 0 1-.375.082H.788V12.48h.66c.218 0 .389.06.512.181.123.122.185.296.185.522Zm1.217-1.333v3.999h1.46c.401 0 .734-.08.998-.237a1.45 1.45 0 0 0 .595-.689c.13-.3.196-.662.196-1.084 0-.42-.065-.778-.196-1.075a1.426 1.426 0 0 0-.589-.68c-.264-.156-.599-.234-1.005-.234H3.362Zm.791.645h.563c.248 0 .45.05.609.152a.89.89 0 0 1 .354.454c.079.201.118.452.118.753a2.3 2.3 0 0 1-.068.592 1.14 1.14 0 0 1-.196.422.8.8 0 0 1-.334.252 1.298 1.298 0 0 1-.483.082h-.563v-2.707Zm3.743 1.763v1.591h-.79V11.85h2.548v.653H7.896v1.117h1.606v.638H7.896Z"/>
+                </svg>Report
+                </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block add_edit_section %}
+{% endblock %}
+{% block add_edit_question %}
+{% endblock %}
+{% block sections_view %}
+        <div class="list-group  list-group-flush">
+        {% for section in sections %}
+        {% if audit %}
+            {% if section.id == current_section.id %}
+                <a style="color:rgb(9, 139, 172);" href="/projects/audit/{{project.id}}/{{current_checklist.id}}/{{section.id}}/audit" class="list-group-item px-0 py-1"><i class="bx-folder "></i><span>{{section.name|title }}</span></a>
+            {% else %}
+                <a  href="/projects/audit/{{project.id}}/{{current_checklist.id}}/{{section.id}}/audit" class="list-group-item px-0 py-1"><i class="bx-folder "></i><span>{{section.name|title }}</span></a>
+            {% endif%}
+        {% else %}
+            {% if section.id == current_section.id %}
+                
+                <a style="color:rgb(9, 139, 172);" href="/projects/answer/{{project.id}}/{{current_checklist.id}}/{{section.id}}" class="list-group-item px-0 py-1"><i class="bx-folder "></i><span>{{section.name|title }}</span></a>
+            {% else %}
+                <a  href="/projects/answer/{{project.id}}/{{current_checklist.id}}/{{section.id}}" class="list-group-item px-0 py-1"><i class="bx-folder "></i><span>{{section.name|title }}</span></a>
+            {% endif%}
+        {% endif %}
+        {% endfor%}
+        </div>
+{% endblock %}
+                                
+{% block question_view %}
+    <div class="col-md-9 mb-md-0 mb-2">
+        {% if audit %}
+            <form id="question-form" name="question-form">
+        {% else %}
+            <form id="question-form" name="question-form" action="/projects/answer/{{project.id}}/{{current_checklist.id}}/{{current_section.id}}" method="POST">
+        {% endif %}
+            <!--Grid row-->
+            {% csrf_token %}
+            <div class="row">
+                <!--Grid column-->
+                <div class="col-md-12 ">
+                    <div class="md-form mb-2">
+
+                    {% if questions|length == 0 %}
+
+                            <p> No questions added to this section </p>
+
+                    {% endif %}
+                    {% for question in questions %}
+                        <div class="form-group pt-3 pb-2">
+                            <div class="mb-2">
+                                <label for="question{{question.id}}"><span>{{forloop.counter}}.</span> {{question.question|capfirst}}</label>
+                                {% if question.attachment %}
+                                |   <a href="/projects/checklist/attachment/{{question.id}}" >
+                                        <svg xmlns="http://www.w3.org/2000/svg"  width="25" height="25" fill="currentColor" style="color:rgb(9, 139, 172);" class="bi bi-paperclip" viewBox="0 0 16 16">
+                                        <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
+                                        </svg></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% if question.type == 'text'%}
+                            {% if audit %}
+                                {% if answers %}
+                                    {% for answer in answers %}
+                                        {% if question.id == answer.question.id %}
+                                            <input type="{{question.type}}" class="form-control mx-2" id="question{{question.id}}" name="question{{question.id}}" value="{{answer.text}}" readonly>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <input type="{{question.type}}" class="form-control mx-2" id="question{{question.id}}" name="question{{question.id}}" value="" readonly>
+                                {% endif %}
+                            {% else %}
+                                {% if answers %}
+                                
+                                    {% for answer in answers %}
+                                        {% if question.id == answer.question.id %}
+                                            <input type="{{question.type}}" class="form-control mx-2" id="question{{question.id}}" name="question{{question.id}}" value="{{answer.text}}">
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <input type="{{question.type}}" class="form-control mx-2" id="question{{question.id}}" name="question{{question.id}}" value="">
+                                {% endif %}
+                            {% endif %}
+                        {% else %}
+                            <div class="md-form d-flex flex-column">
+                                    <div class="d-flex">
+                                        {% for option in question.options.all %}
+                                            <div>
+                                            {% if audit %}
+                                                {% if question in answered_questions %}
+                                                {% for answer in answers %}
+                                                    {% if question.id == answer.question.id%}
+                                                        {%if answer.text == option.option %}
+                                                            <input class="form-check-input mx-2" type="{{question.type}}" name="question{{question.id}}" id="question{{question.id}}-{{option.id}}" value="{{option.option}}" checked disabled >
+                                                            <label class="form-check-label mx-2" for="question{{question.id}}-{{option.id}}">
+                                                                {{option.option}}
+                                                            </label>
+                                                        {% else %}
+                                                        
+                                                            <input class="form-check-input mx-2" type="{{question.type}}" name="question{{question.id}}" id="question{{question.id}}-{{option.id}}" value="{{option.option}}" disabled >
+                                                            <label class="form-check-label mx-2" for="question{{question.id}}-{{option.id}}">
+                                                                {{option.option}}
+                                                            </label>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% else %}
+                                                    <input class="form-check-input mx-2" type="{{question.type}}" name="question{{question.id}}" id="question{{question.id}}-{{option.id}}" value="{{option.option}}" disabled >
+                                                    <label class="form-check-label mx-2" for="question{{question.id}}-{{option.id}}">
+                                                        {{option.option}}
+                                                    </label>
+                                                {% endif %}
+                                            {% else %}
+                                                {% if question in answered_questions %}
+                                                {% for answer in answers %}
+                                                    {% if question.id == answer.question.id%}
+                                                        {%if answer.text == option.option %}
+                                                            <input class="form-check-input mx-2" type="{{question.type}}" name="question{{question.id}}" id="question{{question.id}}-{{option.id}}" value="{{option.option}}" checked >
+                                                            <label class="form-check-label mx-2" for="question{{question.id}}-{{option.id}}">
+                                                                {{option.option}}
+                                                            </label>
+                                                        {% else %}
+                                                        
+                                                            <input class="form-check-input mx-2" type="{{question.type}}" name="question{{question.id}}" id="question{{question.id}}-{{option.id}}" value="{{option.option}}"  >
+                                                            <label class="form-check-label mx-2" for="question{{question.id}}-{{option.id}}">
+                                                                {{option.option}}
+                                                            </label>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endfor %}
+                                                {% else %}
+                                                    <input class="form-check-input mx-2" type="{{question.type}}" name="question{{question.id}}" id="question{{question.id}}-{{option.id}}" value="{{option.option}}" >
+                                                    <label class="form-check-label mx-2" for="question{{question.id}}-{{option.id}}">
+                                                        {{option.option}}
+                                                        
+                                                    </label>
+                                                {% endif %}
+                                            {% endif %}
+                                            </div>
+                                        {% endfor%}
+                                    </div>
+                                    {% if question in answered_questions %}
+                                        {% for answer in answers %}
+                                        {% if question.id == answer.question.id%}
+                                            {% if audit %}
+                                                <div class="d-flex  mt-2">
+                                                    <label class="form-check-label px-1" for="remarks{{question.id}}">
+                                                        Remarks:   
+                                                    </label>
+                                                    <input type="text" class="form-control  mx-4" id="remarks{{question.id}}" name="remarks{{question.id}}" value="{{answer.remarks}}" readonly>
+                                                </div>
+                                            {% else %}
+                                                <div class="d-flex  mt-2">
+                                                    <label class="form-check-label px-1" for="remarks{{question.id}}">
+                                                        Remarks:   
+                                                    </label>
+                                                    <input type="text" class="form-control  mx-4" id="remarks{{question.id}}" name="remarks{{question.id}}" value="{{answer.remarks}}">
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                    {% if audit %}
+                                    <div class="d-flex  mt-2">
+                                        <label class="form-check-label px-1" for="remarks{{question.id}}">
+                                            Remarks:   
+                                        </label>
+                                        <input type="text" class="form-control  mx-4" id="remarks{{question.id}}" name="remarks{{question.id}}" value="{{answer.remarks}}" readonly>
+                                    </div>
+                                    {% else %}
+                                    <div class="d-flex  mt-2">
+                                        <label class="form-check-label px-1" for="remarks{{question.id}}">
+                                            Remarks:   
+                                        </label>
+                                        <input type="text" class="form-control  mx-4" id="remarks{{question.id}}" name="remarks{{question.id}}" value="{{answer.remarks}}">
+                                    </div>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    <br>
+                    {% if not audit and questions|length != 0%}
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

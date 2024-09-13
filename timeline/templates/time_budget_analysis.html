@@ -1,0 +1,214 @@
+{% extends "base.html" %} {% block title %}Time{% endblock %}
+
+{% block time_analysis_active %}active{% endblock %} 
+
+{% block Head %}
+
+<!-- Styles -->
+<style>
+  #chartdiv {
+    width: 100%;
+    height: 82dvh;
+  }
+  .card-body{
+    overflow-x: auto;
+  }
+  </style>
+  
+  <!-- Resources -->
+  <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+  <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+  
+  <!-- Chart code -->
+  <script>
+  am5.ready(function() {
+  
+  
+  // Create root element
+  // https://www.amcharts.com/docs/v5/getting-started/#Root_element
+  var root = am5.Root.new("chartdiv");
+  
+  
+  // Set themes
+  // https://www.amcharts.com/docs/v5/concepts/themes/
+  root.setThemes([
+    am5themes_Animated.new(root)
+  ]);
+  
+  
+  // Create chart
+  // https://www.amcharts.com/docs/v5/charts/xy-chart/
+  var chart = root.container.children.push(am5xy.XYChart.new(root, {
+    panX: false,
+    panY: false,
+    paddingLeft: 0,
+    wheelX: "panX",
+    wheelY: "zoomX",
+    layout: root.verticalLayout
+  }));
+  
+  
+  // Add legend
+  // https://www.amcharts.com/docs/v5/charts/xy-chart/legend-xy-series/
+  var legend = chart.children.unshift(
+    am5.Legend.new(root, {
+      centerX: am5.p50,
+      x: am5.p50
+    })
+  );
+
+  var data= {{data|safe}};
+  
+  
+  // Create axes
+  // https://www.amcharts.com/docs/v5/charts/xy-chart/axes/
+  var xRenderer = am5xy.AxisRendererX.new(root, {
+    cellStartLocation: 0.1,
+    cellEndLocation: 0.9,
+    minorGridEnabled: true
+  })
+  
+  var xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
+    categoryField: "name",
+    renderer: xRenderer,
+    tooltip: am5.Tooltip.new(root, {})
+  }));
+  
+  xRenderer.grid.template.setAll({
+    location: 1
+  })
+  
+  xAxis.data.setAll(data);
+  
+  var yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
+    renderer: am5xy.AxisRendererY.new(root, {
+      strokeOpacity: 0.1
+    })
+  }));
+  
+  // add scrollbar
+  var scrollbar = chart.set("scrollbarX", am5.Scrollbar.new(root, {
+    orientation: "horizontal",
+    maxHeight: 3
+  }));
+
+  scrollbar.startGrip.set("scale", 0.7);
+  scrollbar.endGrip.set("scale", 0.7);
+
+  xRenderer.labels.template.setAll({
+      rotation: 270,
+      oversizedBehavior: "wrap",
+      maxHeight: 150,
+      centerY: am5.p50,
+      centerX: am5.p100,
+      paddingRight: 5,
+
+    });
+
+  // Add series
+  // https://www.amcharts.com/docs/v5/charts/SSxy-chart/series/
+  function makeSeries(name, fieldName,color) {
+    var series = chart.series.push(am5xy.ColumnSeries.new(root, {
+      name: name,
+      xAxis: xAxis,
+      yAxis: yAxis,
+      valueYField: fieldName,
+      categoryXField: "name"
+    }));
+  
+    series.columns.template.setAll({
+      tooltipText: "{name}, {categoryX}:{valueY}",
+      width: am5.percent(90),
+      tooltipY: 0,
+      strokeOpacity: 0,
+      fill: am5.color(color)  // Set the color of the bars
+    });
+  
+    series.data.setAll(data);
+  
+    // Make stuff animate on load
+    // https://www.amcharts.com/docs/v5/concepts/animations/
+    series.appear();
+  
+    series.bullets.push(function () {
+      return am5.Bullet.new(root, {
+        locationY: 0,
+        sprite: am5.Label.new(root, {
+          text: "{valueY}",
+          fill: root.interfaceColors.get("alternativeText"),
+          centerY: 0,
+          centerX: am5.p50,
+          populateText: true
+        })
+      });
+    });
+  
+    legend.data.push(series);
+  }
+  
+  makeSeries("Actual hours", "act_hrs","#008b8b");
+  makeSeries("Budget hours", "bdg_hrs","#20b2aa");
+  // makeSeries("Asia", "asia");
+  // makeSeries("Latin America", "lamerica");
+  // makeSeries("Middle East", "meast");
+  // makeSeries("Africa", "africa");
+  
+  
+  // Make stuff animate on load
+  // https://www.amcharts.com/docs/v5/concepts/animations/
+  chart.appear(1000, 100);
+  
+  }); // end am5.ready()
+  </script>
+
+{% endblock %}
+
+{% block main-content %}
+<div class="card">
+    <div class="card-header">
+        <div class="justify-content-between row">
+            <div class="col-6 col-md-4 col-lg-2">
+                <i class="fas fa-chart-bar me-1"></i><strong>Budget Time Analysis</strong>
+            </div>
+            <div class="col-6 col-md-4 col-lg-9 ">
+                <!-- <form class="efficiency" action="/timeline/timeBudgetAnalysis/" method="POST">
+                    {% csrf_token %}
+                    <div class="justify-content-end row">
+                        <div class="col-12 col-md-6 col-lg-2 mb-2">
+                            <label class="form-group border-lable-flt">
+                               
+                            </label>
+                        </div> 
+                        <div class="col-6 col-md-6 col-lg-2 mb-2">
+                            <div class="form-outline mb-2">
+                                <input type="date"  class="form-control" id="from_date" name="from_date" value="{{from_date|safe}}" required/>
+                                <label class="form-label" for="From_date"><i class="fas fa-filter"></i>From</label>
+                            </div> 
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-2 mb-2">
+                            <div class="form-outline mb-2">
+                                <input type="date"  class="form-control" id="to_date" name="to_date" value="{{to_date|safe}}"  required />
+                                <label class="form-label" for="To_date"><i class="fas fa-filter"></i>To</label>
+                            </div> 
+                        </div>                        
+                        <div class="col-6 col-md-4 col-lg-2 mb-2" >
+                            <button id="submit-btn" type="submit" class="form-control bg-info">SUBMIT</button> 
+                          </div>
+                      </div>
+                </form> -->
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div id="chartdiv"></div>
+    </div>
+    </div>
+    <script>
+     $(document).ready(function() {
+        document.getElementById("from_date").max = document.getElementById("to_date").value;
+        document.getElementById("to_date").min = document.getElementById("from_date").value;
+      }); 
+    </script>
+
+    {% endblock %}

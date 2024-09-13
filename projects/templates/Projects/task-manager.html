@@ -1,0 +1,639 @@
+{% extends "base.html" %}
+
+{% block title %}{{Project.name|safe}}{% endblock %}
+{% block project_active %}active{% endblock %}
+{% block Head %}
+{% load static %}
+
+<link rel="stylesheet" href="{%static 'css/bootstrap-select.css' %}">
+
+<script src="{%static 'js/jquery.min2.1.1.js' %}"></script> 
+<script src="{%static 'js/multselect_bootstrap.bundle.min.js' %}"></script>
+<script src="{%static 'js/bootstrap-Mul_select.min.js' %}"></script>
+
+{% endblock %}
+
+{% block main-content %}
+<div class="card">
+    <div class="card-header ">
+        <i class="fas fa-table"></i> <strong>Project Name : {{Project.name|safe}} :</strong> <progress id="file" value="{{Project.weightage}}" max="100"></progress> : {{Project.weightage}}%
+        <span ><a href="" data-bs-toggle="modal" data-bs-target="#MilestoneModel" >+ Add Milestone...</a></span> 
+        <span  style="float: right;"><a href="" data-bs-toggle="modal" data-bs-target="#Edit_Load_templates" >+Templates..</a> </label></span> 
+        <span >
+            {% if messages %}
+                {% for message in messages %}
+                {% if message.tags == 'success'%}
+                    <label class="text-success" for="">{{message}}</label>
+                    {% elif message.tags == 'error'%}
+                    <label class="text-danger" for="">{{message}}</label>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </span>
+        <span style="padding-left: 5%; align-items: center;">
+            <b><label for="total"> Total:</label></b> <label for="tvalue"> {{project_summary.0.Total}} </label> &emsp;
+            <b style="color: red;"><label for="open"> Open: </label></b> <label for="ovalue"> {{project_summary.0.New}} </label>&emsp;
+            <b style="color: orange;"><label for="inprogress"> Inprogress: </label></b> <label for="ivalue"> {{project_summary.0.Inprogress}} </label>&emsp;
+            <b style="color: blue;"><label for="hold"> Hold: </label></b> <label for="hvalue"> {{project_summary.0.Hold}}</label>&emsp;
+            <b style="color: green;"><label for="completed"> Completed: </label></b> <label for="cvalue"> {{project_summary.0.Completed}}</label>
+        </span>
+    </div>
+    <div class="card-body">
+        <table class="dataTable  display  compact cell-border" style="width: 100%;" id="tbl">
+            <thead>
+                <th>#</th>
+                <th>Status</th>
+                <th>Name</th> 
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>E.Hrs</th>
+                <th>Assigning To</th>
+                <th>Act.Date</th>
+                <th>Description</th>
+                {% if user.groups.all.0.name != 'Employee' %}
+                    <th>Add</th>
+                    <th>Delete</th>
+                {% endif %}
+            </thead>
+            <tbody>
+                {% for milestone in Milestone %}
+                    <tr class="milestone-row" style="background-color: #E3EDF0;" mode = "editmilestone" m_id="{{milestone.id}}" p_id="{{id}}">
+                        <td class="milestone-toggle"><i class="fas fa-chevron-down" style="color: rgb(9, 177, 219); float: left;"></i></td>
+                        <td>{{milestone.weightage}}%</td>
+                        <td>
+                            <select class="form-control custom-select one bg-transparent border-0" col_name="milestone" {{milestone.name|safe}}>
+                                <option selected="selected" hidden>{{milestone.name|safe}}</option>
+                                {% for item in milestone_templates%}
+                                <option value="{{item.milestone}}">{{item.milestone}}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td></td>
+                        <td></td> 
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        {% if  user.groups.all.0.name != 'Employee' %}
+                        <td style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;" ><a data-bs-toggle="modal" data-bs-target="#TaskModel" id="add_task_btn" href="" style="color:rgb(9, 177, 219);" >+ Add Task</a></td>
+                        <td class="text-center"> <a href="/projects/delete-milestone/{{milestone.id}}/{{Project.id|safe}}/" onclick="return confirm('Delete {{milestone.name}} ? ')"> <i class="fas fa-minus-circle"></i></a></td>
+                        {% endif %}
+                    </tr>
+                    {% firstof 'hi' as temp %}
+                    {% for task in tasks %}
+                        {% if milestone.id == task.mid_id %}
+                            {% if temp != task.name %}
+                            <tr class="task-row" t_id="{{task.id}}" m_id="{{milestone.id}}" mode = "editTask"p_id="{{id}}">
+                                <td class="task-toggle" ><i class="fas fa-plus-circle" style="float: right;"></i></td> 
+                                <td class="updateStatus">
+                                    {% if task.status == "Completed" %}
+                                        <i class="fa fa-check-circle" style="color: green;" aria-hidden="true"></i>
+                                    {% elif task.status == "InProgress"%}
+                                        <i class="fas fa-minus-circle" style="color: orange;" aria-hidden="true"></i>
+                                    {% elif  task.status == "New" %}
+                                        <i class="fas fa-circle " style="color: red;" aria-hidden="true"></i>
+                                    {% else %}
+                                        <i class="fas fa-pause-circle " style="color: blue;" aria-hidden="true"></i>
+                                    {% endif %}
+                                </td>
+                                <td class="row_data" edit_type="click" col_name="taskname">{{task.name}}</td>
+                                <td ><input class="form-control one bg-transparent border-0" col_name="start_date" type="date" value="{{task.start_date|safe}}"/></td>
+                                <td ><input class="form-control one bg-transparent border-0" col_name="end_date" type="date" value="{{task.end_date|safe}}"/></td>
+                                <td class="row_data" edit_type="click" col_name="quotted_hours">{{task.quotted_hours}}</td>
+                                <td>
+                                    <select class="form-control custom-select one bg-transparent border-0" col_name="assigned_to" {{task.assigned_to|safe}}>
+                                        <option selected="selected" hidden>{{task.assigned_to|safe}}</option>
+                                        {%for employee in employees %}
+                                            <option value="{{employee.first_name}}">{{employee.first_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                {% if task.status == "Completed" %}
+                                <td>{{task.updated_date|date:'Y-m-d'}}</td>
+                                {% else %}
+                                <td></td>
+                                {% endif %}
+                                <td class="row_data" edit_type="click" col_name="description">{{task.description}}</td>
+                                {% if user.groups.all.0.name != 'Employee' %}
+                                <td class="add_EMP_Task text-center" ><i class="fas fa-user-plus"data-bs-toggle="modal" data-bs-target="#Add_emp_Task_Model" aria-hidden="true" style="color:rgb(9, 177, 219);"></i></td>
+                                <td class="text-center"><a href="/projects/delete-task/{{task.id}}/{{milestone.id}}/{{Project.id|safe}}/" onclick="return confirm('Delete {{task.name}}? ')"><i class="fa fa-times"  style="color: rgb(230, 68, 27);" aria-hidden="true"></i></a></td>
+                                {% endif %}
+                            </tr>
+                            {% firstof task.name as temp %}
+                            {% else %}
+                            <tr class="Assigned_row "m_id="{{milestone.id}}" t_id="{{task.id}}" mode = "editTask" p_id="{{id}}">
+                                <td></td>
+                                <td class="updateStatus">
+                                    {% if task.status == "Completed" %}
+                                        <i class="fa fa-check-circle" style="color: green;" aria-hidden="true"></i>
+                                    {% elif task.status == "InProgress" or task.status == "New" %}
+                                        <i class="fas fa-minus-circle" style="color: #E3D90C;" aria-hidden="true"></i>
+                                    {% else %}
+                                        <i class="fas fa-pause-circle " style="color: red;" aria-hidden="true"></i>
+                                    {% endif %}
+                                </td>
+                                <td class="row_data" edit_type="click" col_name="taskname">{{task.name}}</td>
+                                <td ><input class="form-control one bg-transparent border-0" col_name="start_date"  type="date" value="{{task.start_date|safe}}"/></td>
+                                <td ><input class="form-control one bg-transparent border-0" col_name="end_date"  type="date" value="{{task.end_date|safe}}"/></td>
+                                <td class="row_data" edit_type="click" col_name="quotted_hours">{{task.quotted_hours}}</td>
+                                <td>
+                                    <select class="form-control custom-select one bg-transparent border-0" col_name="assigned_to" {{task.assigned_to|safe}}>
+                                        <option selected="selected" hidden>{{task.assigned_to|safe}}</option>
+                                        {%for employee in employees %}
+                                            <option value="{{employee.first_name}}">{{employee.first_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                {% if task.status == "Completed" %}
+                                <td>{{task.updated_date|date:'Y-m-d'}}</td>
+                                {% else %}
+                                <td></td>
+                                {% endif %}
+                                <td class="row_data" edit_type="click" col_name="description">{{task.description}}</td>
+                                {% if user.groups.all.0.name != 'Employee' %}
+                                <td></td>
+                                <td class="text-center"><a href="/projects/delete-task/{{task.id}}/{{milestone.id}}/{{Project.id|safe}}/" onclick="return confirm('Delete {{task.name}}? ')"><i class="fa fa-times"  style="color: rgb(230, 68, 27);" aria-hidden="true"></i></a></td>
+                                {% endif %}
+                            </tr>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}                                         
+            </tbody>                
+        </table>
+    </div>
+</div>
+
+<!-- ADD Milestone Model -->
+<div id="MilestoneModel" class="modal fade" tabindex="-1" aria-labelledby="add_milestone_template" aria-hidden="true">
+    <div class="modal-dialog">          
+        <div class="modal-content">
+            <div class="modal-header ">
+                <h6  class="modal-title">Add Milestone</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/projects/create-milestone/{{Project.id|safe}}/" method="POST">
+                    {% csrf_token %}
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-12 col-md-12 col-lg-12">
+                            <label class="form-group border-lable-flt">
+                                <select class="form-control custom-select" name="name"id ="_milestone"   required>
+                                    {% for items in milestone_templates%}
+                                    <option value="{{items.milestone}}">{{items.milestone}}</option>
+                                    {% endfor %}  
+                                </select><span>Milestone Name</span>
+                            </label>
+                        </div> 
+                    </div>   
+                    <div class="justify-content-end row">  
+                        <div class="col-6 col-md-6 col-lg-6 mb-3" >
+                            <button type="submit" class="form-control bg-info" >UPDATE</button> 
+                        </div>
+                    </div> 
+                </form>            
+            </div>             
+        </div> 
+    </div>
+</div>
+
+<!-- ADD Task Model -->
+<div id="TaskModel" class="modal fade" tabindex="-1"  aria-labelledby="add_task_model" aria-hidden="true">
+    <div class="modal-dialog">    
+        <div class="modal-content">
+            <form action="/projects/create-task/{{Project.id|safe}}/" method="POST">
+                {% csrf_token %}
+                <div class="modal-header ">                
+                    <h6 class="modal-title" >Add Task Under Milestone</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body"> 
+                    <div class="justify-content-around row mb-3">                        
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <label class="form-group border-lable-flt">
+                                <select class="form-control custom-select" name="name" id="taskslist" value="" required>
+                                    {% for item in tasks_templates%}
+                                        <option value="{{item.task}}">{{item.task}}</option>
+                                    {% endfor %}
+                                </select><span>Task</span>
+                            </label>
+                        </div>                         
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <label class="form-group border-lable-flt">
+                                <select class="selectpicker form-control select" multiple value="" id="assigned_to" name="assigned_to_list" required>
+                                    {% for employee in employees%}
+                                        <option value="{{employee.first_name}}">{{employee.first_name}}</option>
+                                    {% endfor %}
+                                </select><span>Employees</span>
+                            </label>
+                        </div>                      
+                    </div>                                                                                 
+                    <!-- priority,status -->
+                    <div class="justify-content-around row mb-3">                         
+                        <div class="col-6 col-md-6 col-lg-6">
+                        <label class="form-group border-lable-flt">
+                            <select class="form-control custom-select" name="priority" value="" required>
+                                <option value="High"selected>High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select><span>Priority</span>
+                        </label>
+                    </div>                                              
+                    <div class="col-6 col-md-6 col-lg-6">
+                        <label class="form-group border-lable-flt">
+                            <select class="form-control custom-select" name="status" value="" required>
+                                <option value="New" selected>New</option>
+                                <option value="InProgress">InProgress</option>
+                                <option value="Hold">Hold</option>
+                                <option value="Completed">Completed</option>
+                            </select><span>Status</span>
+                        </label>
+                    </div>                                        
+                    </div>
+                    <!--weightage,Est_hrs-->
+                    <div class="justify-content-around row mb-3">                                                                        
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-outline ">
+                                <input type="number" class="form-control" name="weightage" value="1" required>
+                                <label class="form-label" for="Weightage">Weightage</label>
+                            </div>
+                        </div>  
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-outline">
+                                <input type="number" class="form-control" id="est_hours" name="quotted_hours" value="20" required>
+                                <label class="form-label" for="hours">Est_Hours</label>
+                            </div>
+                        </div>               
+                    </div>
+                    <!-- start and end date-->
+                    <div class="justify-content-around row mb-3">                                                                        
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-outline ">
+                                <input type="date" class="form-control" name="start_date" id="start_date" value="" required>
+                                <label class="form-label" for="start">Start Date</label>
+                            </div>
+                        </div>    
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-outline">
+                                <input type="date" class="form-control" name="end_date" id="end_date"  value="" required>
+                                <label class="form-label" for="end">End Date</label>
+                            </div>
+                        </div>                                   
+                    </div>   
+                        <!--Comments  -->
+                    <div class="justify-content-around row mb-3">                                                                        
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="form-outline">
+                                <input type="textarea" class="form-control" id="Description" name="description" value="" cols="30" rows="1" >
+                                <label class="form-label" for="Description">Description</label>
+                            </div>                                   
+                        </div>                          
+                    </div>                        
+                    <div class="justify-content-end row mb-3">  
+                        <div class="col-6 col-md-4 col-lg-6">
+                            <input style="display: none;" type="text" id="mid" name="mid_id"  placeholder="mid" required>
+                            <button type="submit" class="form-control bg-info" >UPDATE</button> 
+                        </div>
+                    </div> 
+                </div>              
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Templates and Upload Templates -->
+<div id="Edit_Load_templates" class="modal fade" role="dialog">
+    <div class="modal-dialog" >    
+        <div class="modal-content" >
+            <form  action="/projects/Edit_Load_templates/{{Project.id|safe}}/" method="POST">
+                {% csrf_token %}
+                <div class="modal-header " >
+                    <h6  class="modal-title" >Add Milstone/Task Templates</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-body">
+                        <div class="justify-content-around row mb-3">
+                            <div class="col-12 col-md-6 col-lg-12">
+                                <label class="form-group border-lable-flt">
+                                    <select class="selectpicker form-control form-select"  name="milestone_template_list"id="milestone_template_list"  multiple required>
+                                        {% for items in milestone_templates%}
+                                        <option value="{{items.id}}">{{items.milestone}}</option> <!--{{items.}} -->
+                                        {% endfor %}  
+                                    </select><span>Milestone Name</span>
+                                </label>
+                            </div> 
+                        </div>  
+                        <div class="justify-content-around row mb-3">
+                            <div class="col-12 col-md-6 col-lg-12">
+                                <label class="form-group border-lable-flt">
+                                    <select class="form-control custom-select" id="assigned_to" name="assigned_to"   required>
+                                        {% for employee in employees%}
+                                        <option value="{{employee.first_name}}">{{employee.first_name}}</option>
+                                        {% endfor %}
+                                    </select><span>Employee</span>
+                                </label>
+                            </div> 
+                        </div> 
+                        <div class="justify-content-end row mb-3">  
+                            <div class="col-6 col-md-4 col-lg-6">
+                                <input style="display: none;" type="text" class="form-control" id="Project_id" name="pid" value="{{Project.id}}"  placeholder="PID" required>
+                                <button type="submit" class="form-control bg-info" >UPDATE</button> 
+                            </div>
+                        </div>   
+                    </div> 
+                </div>        
+            </form>
+        </div>
+    </div>
+</div> 
+<!-- Add Employee To Task -->
+<div id="Add_emp_Task_Model" class="modal fade" tabindex="-1" aria-labelledby="edit_task_template" aria-hidden="true">
+    <div class="modal-dialog">   
+        <div class="modal-content">
+            <form action="/projects/create-task/{{Project.id|safe}}/" method="POST">
+                {% csrf_token %}
+                <div class="modal-header ">
+                    <h6  class="modal-title">Add Employees</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- task,emp_name -->
+                    <div class="justify-content-around row mb-3">                        
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <!-- <label class="form-group border-lable-flt">
+                                <select class="form-control custom-select" id="A_E_task_name" name="name" value="" required>
+                                    {% for item in tasks_templates%}
+                                        <option value="{{item.task}}">{{item.task}}</option>
+                                    {% endfor %}
+                                </select><span> Select Task</span>
+                            </label> -->
+                            <div class="form-outline">
+                                <input type="text" class="form-control" name="name" value=""  id="A_E_task_name" required>
+                                <label class="form-label" for="name">Task</label>
+                            </div>
+                        </div>                         
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <label class="form-group border-lable-flt">
+                                <select class="form-control select selectpicker" multiple name="assigned_to_list" id="A_E_task_assigned_to"  required>
+                                        {% for employee in employees%}
+                                            <option value="{{employee.first_name}}">{{employee.first_name}}</option>
+                                        {% endfor %}
+                                </select>
+                                <span>Employee</span>
+                            </label>
+                        </div>                      
+                    </div>  
+                    <!-- start and end date-->
+                    <div class="justify-content-around row mb-3">                                                                        
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-outline">
+                                <input type="date" class="form-control" id="A_E_start_date" name="start_date" value="{{date|safe}}" required>
+                                <label class="form-label" for="task_start_date">Start Date</label>
+                            </div>
+                        </div>    
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-outline">
+                                <input type="date" class="form-control"  id="A_E_end_date" name="end_date"value="{{date|safe}}" required>
+                                <label class="form-label" for="task_end_date">End Date</label>
+                            </div>
+                        </div>                                   
+                    </div>    
+                    <!-- priority,status -->
+                    <div class="justify-content-around row mb-3">                         
+                        <div class="col-6 col-md-6 col-lg-6">
+                        <label class="form-group border-lable-flt">
+                            <select class="form-control custom-select" name="priority" id="A_E_task_priority" required>
+                                <!-- <option value="" disabled selected>Select Priority</option> -->
+                                <option value="High" selected>High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select><span>Priority</span>
+                        </label>
+                    </div>                                              
+                    <div class="col-6 col-md-6 col-lg-6">
+                        <label class="form-group border-lable-flt">
+                            <select class="form-control custom-select" name="status" id="A_E_task_status" required>
+                                    <option value="InProgress" selected>InProgress</option>
+                                    <option value="New">New</option>
+                                    <option value="Hold">Hold</option>
+                                    <option value="Completed">Completed</option>
+                            </select><span>Status</span>
+                        </label>
+                    </div>                                        
+                    </div>     
+                   <!--weightage,Est_hrs-->
+                    <div class="justify-content-around row mb-3">                                                                        
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-outline">
+                                <input type="number" class="form-control" id="A_E_task_weightage" min="1" max="10" name="weightage" value="1">
+                                <label class="form-label" for="Weightage">Weightage</label>
+                            </div>
+                        </div>  
+                        <div class="col-6 col-md-6 col-lg-6">
+                            <div class="form-outline">
+                                <input type="number" class="form-control" id="A_E_task_hours" name="quotted_hours"  required>
+                                <label class="form-label" for="hours">Est_Hours</label>
+                            </div>
+                        </div>               
+                    </div>    
+                    <!--Comments  -->
+                    <div class="justify-content-around row mb-3">                                                                        
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="form-outline">
+                                <input type="textarea" class="form-control" id="A_E_task_description" name="description" placeholder="Description" cols="30" rows="1"  required>
+                                <label class="form-label" for="comment">Comment</label>
+                            </div>                                   
+                        </div>                          
+                    </div>                        
+                    <!--submit  -->
+                    <div class="justify-content-end row mb-3">  
+                        <div class="col-6 col-md-4 col-lg-4">
+                            <input style="display: none;" type="text" id="A_E_milestone_id" name="mid_id"  placeholder="mid" required>
+                            <button type="submit" class="form-control bg-info"  >UPDATE</button> 
+                        </div>
+                    </div>  
+                </div>        
+            </form>
+        </div>    
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready( function () {
+    var table = $('.dataTable').DataTable({
+        ordering : false,
+        lengthMenu: [200,100,50,25,10],
+        scrollCollapse: true,
+        scrollY: '65dvh',
+        responsive:true,
+        columnDefs : [ {  className : "text-center",targets:[0,1,5]}] ,
+        });
+
+    table.on("click","tr .milestone-toggle",function(e) {
+        $(this).closest('tr').nextUntil('.milestone-row').toggle();
+        }); 
+
+    table.on("click","tr .task-toggle",function() {
+        $(this).closest('tr').nextUntil('.task-row','.Assigned_row').toggle();
+        }); 
+
+    table.on('click','tr #add_task_btn',function(){   
+        $('#mid').val($(this).closest('tr').attr('m_id'));
+        });
+
+    table.on('click','tr .add_EMP_Task',function(){ 
+        $('#A_E_task_name').val(table.row($(this).closest('tr')).data()[2]);
+        $('#A_E_start_date').val(table.row($(this).closest('tr')).data()[3].split('value=')[1].substring(1,11));
+        $('#A_E_end_date').val(table.row($(this).closest('tr')).data()[4].split('value=')[1].substring(1,11));
+        $('#A_E_task_hours').val(table.row($(this).closest('tr')).data()[5]);
+        $('#A_E_task_description').val(table.row($(this).closest('tr')).data()[8]);
+        $('#A_E_milestone_id').val($(this).closest('tr').attr('m_id'));
+        });
+   
+// status update
+    // table.on('dblclick','.updateStatus',function(){
+    //     $('#taskid').val($(this).closest('tr').attr('t_id'));
+    // })
+        //    create task
+    $(document).on('click', '.m_row_data', function(e) {
+        e.preventDefault();
+        var arr = {};
+        $.extend(arr, {pid:$(this).closest('tr').attr('p_id')},{mid:$(this).closest('tr').attr('m_id')});
+        $.post("{% url 'creatreTaskAjax'%}",arr,
+                    function(response){
+                    if (response.status == 'ok') {
+                        console.log(response)
+                    } 
+                })
+    });	
+
+    $(document).on('click', '.row_data', function(e) {
+        e.preventDefault();
+        //make div editable
+        if ("{{user.groups.all.0.name}}"!='Employee'){
+        $(this).closest('td').attr('contenteditable', 'true');
+        //add bg css
+        $(this).addClass('bg-light').css('padding','5px');
+
+        $(this).focus();
+        }
+        else{
+            alert("You do not have permission to edit ")
+        }
+    });	
+   
+    $(function () {
+            $(".one").change(function (e) {
+                event.preventDefault();
+                if ("{{user.groups.all.0.name}}"!='Employee'){
+                    var p_id =  $(this).closest('tr').attr('p_id');
+                    var m_id =  $(this).closest('tr').attr('m_id');
+                    var t_id =  $(this).closest('tr').attr('t_id');
+                    var mode =  $(this).closest('tr').attr('mode');
+                    var row_div = $(this)
+                    var col_name = row_div.attr('col_name');
+                    var arr = {};
+                    
+                    var options =  $(this).val();
+                    arr[col_name] = options;
+                    if (mode == "editmilestone"){
+                        $.extend(arr, {m_id:m_id},{p_id:p_id},{'mode':'editMilestone'});
+                    }
+                    else{
+                        $.extend(arr, {t_id:t_id},{p_id:p_id},{'mode':'editTask'});
+                    }
+                    $.post("{% url 'editTaskAjax'%}",arr,
+                        function(response){
+                        if (response.status == 'ok') {
+                            console.log(response)
+                            location.reload();
+                        } 
+                    })
+                }
+                else{
+                    alert("You do not have permission to edit ")
+                }
+            })
+        })
+            //--->save single field data > start focusout
+    $(document).on('focusout', '.row_data', function(event) 
+        {   
+            event.preventDefault();
+            if ("{{user.groups.all.0.name}}" == "Lead" ||"{{user.groups.all.0.name}}"=='Admin'){
+                var t_id = $(this).closest('tr').attr('t_id'); 
+                var p_id =  $(this).closest('tr').attr('p_id');
+                var row_div = $(this)			
+                .removeClass('bg-light') //add bg css
+                .css('padding','')
+                var col_name = row_div.attr('col_name'); 
+                var col_val = row_div.html(); 
+                var arr = {};
+                arr[col_name] = col_val;
+            
+                //use the "arr"	object for your ajax call
+                $.extend(arr, {t_id:t_id},{p_id:p_id});
+                $.post("{% url 'editTaskAjax'%}",arr,
+                    function(response){
+                    if (response.status == 'ok') {
+                        // It's all good
+                        console.log(response)
+                        location.reload();
+                    } else {
+                        // Do something with errors
+                    }
+                })
+            }
+            else{
+                alert("You do not have permission to edit ")
+            }
+	})	
+    
+    $('select').selectpicker();
+}); 
+ 
+</script>
+
+<script>
+    $('.EndDate').on("change",function(){
+        var from = $(".StartDate").val();
+        var to = $(".EndDate").val();
+        if(Date.parse(from) > Date.parse(to)){
+            alert("Invalid Date Range");
+            $(".EndDate").val("");
+        } 
+        alert("ghj")
+    });
+</script>
+<script>
+    document.getElementById('start_date').value = new Date().toISOString().substring(0, 10);
+    document.getElementById('end_date').value = new Date().toISOString().substring(0, 10);
+</script>
+
+<script>
+    $(".btn-close").click(function(){
+        $("#StatusModel").modal('hide');
+    });
+</script>
+<!-- submit timesheet -->
+<script type="text/javascript">
+    $('#update_btn').on('click',function(){
+        $.ajax({
+            type:'POST',
+            url:"",
+            data:$('#submit_form_id').serialize(),
+            dataType:"json",
+            headers:{'X-CSRFToken':'{% csrf_token %}'},
+            success:function(response){
+                if(response.status =="success"){
+                    load_data();
+                }else{alert("Error");}
+            },
+            failure: function(error){
+                alert("Error occured while cllaing  view...");
+            }
+        })
+    })
+
+</script>
+{% endblock %}

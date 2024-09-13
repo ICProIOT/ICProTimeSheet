@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Projects summary {% endblock %}
+
+{% block overall_timesheet_active %}active{% endblock %}
+
+{% block main-content %}
+
+<div class="card">
+    <div class="card-header" style="height: 56px;">
+        <div class="justify-content-between row">
+            <div class="col-sm-12 col-md-3 col-lg-2">
+                <i class="fas fa-table"></i> <strong>Projects Summary Log</strong>
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-9">
+                <form class="project_analysis "  action="/timeline/OverallTimesheetLog/" method="POST">
+                    {% csrf_token %}
+                    <div  class="justify-content-end row">
+                        <div class="col-12 col-md-6 col-lg-2 mb-2">
+                            <label class="form-group border-lable-flt">
+                                <select class="form-control custom-select" name="Empname" id="Empname" value="Empname"  style="height: 36px;" >
+                                    <option value>All Employee  </option>      
+                                    {% for Empname in emp_name%}
+                                    <option value="{{Empname.first_name}}">{{Empname.first_name}}</option>
+                                    {% endfor %}
+                                </select><span><i class="fas fa-filter"></i>Employee</span>
+                            </label>
+                        </div>                        
+                        <div class="col-12 col-md-6 col-lg-2 mb-3">
+                            <label class="form-group border-lable-flt">
+                                <select class="form-control custom-select" name="project" id="project" value="project" style="height: 36px;" >
+                                    <option value>All Project</option>  
+                                    {% for project in pro_name%}
+                                        <option value="{{project.name}}">{{project.name}}</option>
+                                    {% endfor %}
+                                </select > <span><i class="fas fa-filter"></i>Project</span>
+                            </label>
+                        </div>   
+                        <!-- <div class="col-6 col-md-6 col-lg-1 mb-2">
+                            <span style="float: right;padding-top: 5px;"><input type="checkbox" id="is_active" name="active"  value="Active" checked> <label for="is_active"></label></span>
+                        </div> -->
+                        <div class="col-sm-6 col-md-6 col-lg-2 mb-2">
+                            <div class="form-outline mb-2">
+                                <input type="date"  class="form-control" id="Date" name="from_date" value="{{from_date|safe}}" />
+                                <label class="form-label" for="From_date"><i class="fas fa-filter"></i>From</label>
+                            </div> 
+                        </div>
+                        <div class="col-6 col-md-6 col-lg-2 mb-2">
+                            <div class="form-outline mb-2">
+                                <input type="date"  class="form-control" id="Date" name="to_date" value="{{to_date|safe}}"  required />
+                                <label class="form-label" for="To_date"><i class="fas fa-filter"></i>To</label>
+                            </div> 
+                        </div>
+                            <!--submit-->
+                        <div class="col-6 col-md-6 col-lg-2 mb-2">
+                            <button type="submit" class="form-control bg-info">SUBMIT</button> 
+                        </div>
+                    </div>
+                </form> 
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="dataTable display nowrap compact cell-border" style="width: 100%;">
+            <thead>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Project</th>
+                <th>Milestone</th>
+                <th>Hours</th>
+                <th>Comment</th>
+            </thead>
+            <tbody>
+                {% for log in logs%}
+                    <tr>
+                        <td>{{log.uid__first_name}}</td>
+                        <td>{{log.date|date:'Y-m-d'}}</td>
+                        <td>{{log.task_id__pid__name}}</td>
+                        <td>{{log.task_id__mid__name}}</td>
+                        <td>{{log.total_hrs}}</td>
+                        <td>{{log.comment}}</td>
+                        </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready( function () {
+
+        $('#Empname').val('{{selectedEmpolyee|safe}}'=='None'?'':'{{selectedEmpolyee|safe}}')
+        $('#project').val('{{selectedProject|safe}}'=='None'?'':'{{selectedProject|safe}}')
+
+        var table = $('.dataTable').DataTable({
+        dom: 'Bfrtip',
+        buttons: ['excel'],//, 'pdf', 'print' ,'copy', 'csv',
+        ordering : false,
+        lengthMenu: [200,100,50,25,10],
+        scrollX: true,
+        scrollCollapse: true,
+        scrollY: '67dvh',
+        responsive:true,
+      });
+    });
+</script>
+{% endblock %}

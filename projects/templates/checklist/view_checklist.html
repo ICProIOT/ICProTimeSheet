@@ -1,0 +1,30 @@
+{% extends "checklist/checklist_base.html" %}
+{% block checklist_view %}
+    <div class="row">
+        <div class="col-12 col-lg-12 border-bottom px-2 py-1 mb-1">
+            <div class="d-flex"> 
+                <div> <h6>{{project.name|capfirst}} -> {{current_checklist.name|capfirst}}</h6> </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block sections_view %}
+    <div class="list-group list-group-flush"> 
+        
+    <a href="{{section.id}}" class="list-group-item px-0 py-1"><i class="bx-folder "></i><span>No Sections</span></a>
+
+    </div>
+{% endblock %}
+
+{% block question_view %}
+
+    <div class="d-flex border-bottom  align-items-center">
+        <div>
+                <h5 class="mb-0">No sections in this project checklist please add atleast one!</h5>
+            <!--<span style="float: right;"><a href=""data-bs-toggle="modal" data-bs-target="#Add_Question_Modal" style="color:rgb(9, 139, 172);">+</a> </span> -->
+        </div>
+    </div> 
+    
+{% endblock %}

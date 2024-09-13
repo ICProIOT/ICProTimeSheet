@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Planning chart{% endblock %} 
+{% block planningchart_active %}active{% endblock %}
+{% block Head %}
+{% endblock %}
+{% block main-content %}
+    <!-- Styles -->
+<style>
+    #chartdiv {
+      width: 100%;
+      /* min-height:200px; */
+      height:82dvh;
+    }
+    </style>
+    
+    <!-- Resources -->
+    <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+    
+    <!-- Chart code -->
+    <script>
+    am5.ready(function() {
+    
+    // Create root element
+    // https://www.amcharts.com/docs/v5/getting-started/#Root_element
+    var root = am5.Root.new("chartdiv");
+    root.dateFormatter.setAll({
+      dateFormat: "yyyy-MM-dd",
+      dateFields: ["valueX", "openValueX"]
+    });
+    
+    
+    // Set themes
+    // https://www.amcharts.com/docs/v5/concepts/themes/
+    root.setThemes([
+      am5themes_Animated.new(root)
+    ]);
+    
+    
+    // Create chart
+    // https://www.amcharts.com/docs/v5/charts/xy-chart/
+    var chart = root.container.children.push(am5xy.XYChart.new(root, {
+      panX: false,
+      panY: false,
+      wheelX: "panX",
+      wheelY: "zoomX",
+      layout: root.verticalLayout
+    }));
+
+
+    // Add legend
+    // https://www.amcharts.com/docs/v5/charts/xy-chart/legend-xy-series/
+    var legend = chart.children.push(am5.Legend.new(root, {
+      centerX: am5.p50,
+      x: am5.p50
+    }))
+    
+    var colors = chart.get("colors");
+    
+    // // Data
+    var data = {{projectlist|safe}};
+
+    // Create axes
+    // https://www.amcharts.com/docs/v5/charts/xy-chart/axes/
+    var yAxis = chart.yAxes.push(
+      am5xy.CategoryAxis.new(root, {
+        categoryField: "name",
+        renderer: am5xy.AxisRendererY.new(root, { inversed: true }),
+        tooltip: am5.Tooltip.new(root, {
+          themeTags: ["axis"],
+          animationDuration: 200
+        })
+      })
+    );
+    yAxis.data.setAll({{name|safe}});
+
+    var xAxis = chart.xAxes.push(
+      am5xy.DateAxis.new(root, {
+        baseInterval: { timeUnit: "day", count: 1 },
+        renderer: am5xy.AxisRendererX.new(root, {strokeOpacity: 0.1})
+      })
+    );
+    
+    // Add series
+    // https://www.amcharts.com/docs/v5/charts/xy-chart/series/
+    var series = chart.series.push(am5xy.ColumnSeries.new(root, {
+      xAxis: xAxis,
+      yAxis: yAxis,
+      openValueXField: "start_date",
+      valueXField: "end_date",
+      categoryYField: "name",
+      sequencedInterpolation: true
+    }));
+    series.bullets.push(function() {
+      return am5.Bullet.new(root, {
+        sprite: am5.Label.new(root, {
+          text: "{Taskname}",
+          centerX: am5.percent(50),
+          centerY: am5.percent(50),
+          populateText: true
+        })
+      });
+    });
+    series.columns.template.setAll({
+      templateField: "columnSettings",
+      strokeOpacity: 0,
+      tooltipText: "{Taskname}: {openValueX.formatDate('yyyy-MM-dd HH:mm')} - {valueX.formatDate('yyyy-MM-dd HH:mm')}"
+    });
+    
+    series.data.processor = am5.DataProcessor.new(root, {
+      dateFields: ["start_date", "end_date"],
+      dateFormat: "yyyy-MM-dd HH:mm"
+    });
+    series.data.setAll(data);
+    
+    // Add scrollbars
+    chart.set("scrollbarX", am5.Scrollbar.new(root, {
+      orientation: "horizontal"
+    }));
+    
+    // Make stuff animate on load
+    // https://www.amcharts.com/docs/v5/concepts/animations/
+    series.appear();
+    chart.appear(1000, 100);
+    
+    //To remove AM chart logo
+    root._logo.dispose();
+    }); // end am5.ready()
+    </script>
+
+    <!-- HTML -->
+    <div class="card ">
+        <div class="card-header d-flex justify-content-between align-items-center" style="height:56px;">
+            <div class="col-6">
+              <i class="fas fa-chart-bar me-1"></i><strong>Project Analysis</strong>
+            </div>
+            <div class="col-6">
+                <form action="/projects/gantchart-filter" method="POST">
+                  {% csrf_token %}
+                  <!-- div For From date and To Date-->
+                  <div class="row d-flex justify-content-center">
+                        <!-- all projects -->
+                        <div class="col-3">
+                          <label class="form-group border-lable-flt">
+                              <select class="form-control custom-select" name="project" id="project" value="project" required>
+                                  <option value=All_project selected>All Project</option>  
+                                  {% for project in project_name_%}
+                                  <option value="{{project.name}}">{{project.name}}</option>
+                                  {% endfor %}
+                              </select> <span><i class="fas fa-filter"></i>Project</span>
+                          </label>
+                        </div>
+                    <!--from date-->
+                    <div class="col-3">
+                        <div class="form-outline">
+                            <input type="date" class="form-control" id="Date" name="startdate" value="{{startdate|safe}}" />
+                            <label class="form-label" for="From_date"><i class="fas fa-filter"></i>From</label>
+                        </div>
+                    </div>
+                    <!--To  Date-->
+                    <div class="col-3">
+                        <div class="form-outline">
+                            <input type="date" class="form-control" id="Date" name="enddate" value="{{enddate|safe}}" required />
+                            <label class="form-label" for="To_date"><i class="fas fa-filter"></i>To</label>
+                        </div>
+                    </div>
+                
+                    <!-- submit -->
+                    <div class="col-3">
+                        <button type="submit" class="form-control bg-info">SUBMIT</button> 
+                    </div>
+                  </div>
+                </form>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="chartdiv"></div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}list Templates{% endblock %}
+
+{% block template_active %}active{% endblock %}
+
+{% block Head %}
+
+<style>
+.table-responsive {
+    max-height:81dvh;
+}
+
+</style>
+{% endblock %}
+
+{% block main-content %}
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="col-6">
+            <i class="fas fa-table"></i> <strong>Templates Details</strong>
+            <span class="ps-2"><a href="" data-bs-toggle="modal" data-bs-target="#Add_Milestone" style="color:rgb(9, 139, 172);">+ Add Milestone..</a> </span>
+        </div>
+        <div class="d-flex col-6 justify-content-end align-items-center">
+            <div class="col-6 col-md-4 col-lg-3">
+                <label class="form-group border-lable-flt">
+                    <select id="department_" class="form-select"></select>
+                    <span class="form-label">Department</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="card-body "> 
+        <div class="table-responsive">
+            <table id="tabletask" class="table table-sm table-bordered table-striped table-fixed" >
+                <thead>
+                    <th style="width: 3dvw;">#</th>
+                    <th>Milestone</th>
+                    <th>Task</th>
+                    <th>Delete</th>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ADD Milestone Model -->
+<div id="Add_Milestone" class="modal fade" role="dialog">
+    <div class="modal-dialog">          
+        <div class="modal-content ">
+            <form id="milestoneform" autocomplete="off">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add Milestone</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-outline ">
+                        <input type="text" class="form-control"  id="department" name="department" readonly>
+                        <label class="form-label" for="department">Department</label>
+                    </div>
+                    <div class="form-outline my-2">
+                        <input type="text" class="form-control"  id="milestone" name="milestone" required>
+                        <label class="form-label" for="milestone">Milestone</label>
+                    </div>
+                    <div class="row justify-content-end">
+                        <div class="col-sm-4 col-md-4 col-lg-4">
+                            <button type="submit" class="form-control bg-info" id="milestonesubmitbtn" >SUBMIT</button>
+                        </div>
+                    </div>
+                </div>  
+            </form>
+        </div> 
+    </div>
+</div>
+
+<!-- ADD Task Model -->
+<div id="Add_Task" class="modal fade" role="dialog" >
+    <div class="modal-dialog" >    
+        <div class="modal-content" >
+            <form  method="POST" id="taskform" autocomplete="off">
+                {% csrf_token %}
+                <div class="modal-header" >
+                    <h5 class="modal-title" id="exampleModalLabel" >Add Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-outline mb-2">
+                        <input type="text" class="form-control"  id="task" name="task" value="" required>
+                        <label class="form-label" for="task">Task</label>
+                    </div>
+                    <div class="row mb-2 justify-content-end">
+                        <div class="col-6 col-md-6 col-lg-4">
+                            <div class="form-outline mb-2" style="display: none;">
+                                <input type="text" class="form-control"  value="" id="mid_id" name="mid" required>
+                                <label class="form-label" for="mid_id">MID</label>
+                            </div>
+                        </div>                    
+                        <div class="col-6 col-md-4 col-lg-4">
+                            <button type="submit" class="form-control bg-info" id="tasksubmitbtn">SUBMIT</button>
+                        </div>
+                    </div>
+                </div>  
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+ $(document).ready( function () {
+    
+    $('#department_').on("change",function(){
+        var departmentname = $("#department_ :selected").text();
+        $('#department').val(departmentname);
+        var arr = {};
+        arr['department'] = departmentname;
+        $.extend(arr, {dept:departmentname},{mode:"dept_change"});
+        $.post("{% url 'listtemplate_task'%}",arr,
+        function(response){
+            var tabledata = response.tasklist
+            load_data(tabledata);
+        })
+    }); 
+    $.ajax({
+        url: "{% url 'listtemplate_task' %}",
+        success: function(json) {
+            var data = json.tasklist
+            var dept_list = json.department_list
+            var options = "";
+            $.each(dept_list, function(index, value) {
+                options += '<option value="'+value+'">'+value+'</option>';
+            });
+            $('#department_').append( options );
+            $('#department').val(dept_list[0]);
+            load_data(data)
+        },
+        dataType: "json"
+    });
+
+    $(document).on('click', '.addtask_model', function(){
+        var milestone_id = $(this).closest('tr').attr('m_id');
+        $('#mid_id').val(milestone_id);
+    })
+});  
+function load_data(response){
+    $('#tabletask tr').not(function(){ return !!$(this).has('th').length; }).remove();
+    var k = '<tbody id = "_tbody" >'
+    if (response.length !=0){
+        $('#tabletask tr').not(function(){ return !!$(this).has('th').length; }).remove();
+        var temp = ""
+        $.each(response, function(i, val){
+            if(val['milestone']!=temp)
+            {
+                k+='<tr m_id='+val['id']+' dept='+val['department']+' class="milestone-row"><td><i class="fas fa-chevron-right me-2 toggle"></i></td><td class="row_data" col_name="milestonename">' + val['milestone'] + '</td>';
+                k+='<td><a style="color:rgb(9, 139, 172);" href="" data-bs-toggle="modal" data-bs-target="#Add_Task" class="addtask_model">+ Add Task</a></td><td><i class="fas fa-minus-circle text-warning delete_ ms-3"></i></td>';
+                k+='</tr>';
+                k+='<tr m_id='+val['id']+' t_id='+val['task_templates__id']+' dept='+val['department']+'>';
+                k+='<td></td><td></td>';
+                k+='<td class="row_data" col_name="taskname">' + val['task_templates__task'] + '</td><td><i class="fas fa-minus-circle text-warning delete_ ms-3"></i></td>';
+                k+='</tr>';
+            }
+            else{
+                k+='<tr m_id='+val['id']+' t_id='+val['task_templates__id']+' dept='+val['department']+'>';
+                k+='<td></td><td></td>';
+                k+='<td class="row_data" col_name="taskname">' + val['task_templates__task'] + '</td><td><i class="fas fa-minus-circle text-warning delete_ ms-3"></i></td>';
+                k+='</tr>';
+            }
+            temp = val['milestone'];
+        });
+    }else{
+        k+='<tr><td colspan="4" class="text-center text-info text-uppercase">Milestone and tasks not found!!</td></tr>'
+    }
+    k+='</tbody>';
+    $('#tabletask').append(k);
+}
+
+
+$('#tabletask').on("click","tr .toggle",function() {
+    $(this).closest('tr').nextUntil('.milestone-row').toggle();
+});
+  
+//edit tablerow
+$(document).on('click', '.row_data', function(e) {
+    e.preventDefault();
+
+    //make div editable
+    $(this).closest('td').attr('contenteditable', 'true');
+
+    $(this).focus();
+}); 
+
+$(document).on('keypress', '.row_data', function(event) 
+{
+    var tskid = $(this).closest('tr').attr('t_id');
+    var milstnid = $(this).closest('tr').attr('m_id');
+    var dept = $(this).closest('tr').attr('dept');
+    var row_div = $(this)
+
+    var col_name = row_div.attr('col_name'); 
+    var col_val = row_div.html(); 
+  
+    var arr_ = {};
+    arr_[col_name] = col_valreplace("&nbsp;","");
+    $.extend(arr_,{tskid:tskid},{milstnid:milstnid},{mode:"edit_table"},{dept:dept});
+    if(event.which==13){
+        $.post("{% url 'listtemplate_task'%}",arr_,
+        function(response){
+            load_data(response.tasklist)
+        })
+    }
+})
+
+//add milestone
+$(document).on('click', '#milestonesubmitbtn', function(e) {
+    event.preventDefault();
+    $.ajax({
+        url: "{% url 'Add-milestone' %}",
+        type:'POST',
+        data:$("#milestoneform").serialize(),
+        success: function(jsonresponse) {
+            load_data(jsonresponse.tasklist)
+            $('.btn-close').click();
+        }    
+    })
+})
+
+//add task
+$(document).on('click', '#tasksubmitbtn', function(e) {
+    event.preventDefault();
+    $.ajax({
+        url: "{% url 'Add-task' %}",
+        type:'POST',
+        data:$("#taskform").serialize(),
+        success: function(jsonresponse) {
+            load_data(jsonresponse.tasklist)
+            $('.btn-close').click();
+        }    
+    })
+})
+
+// delete 
+$(document).on('click', '.delete_', function(e)
+{
+    if (confirm("Are you want to delete?")) {
+        var tskid = $(this).closest('tr').attr('t_id');
+        var milstnid = $(this).closest('tr').attr('m_id');
+        var dept = $(this).closest('tr').attr('dept');
+        if(tskid==undefined)
+        {
+            var arr_ = {};
+            $.extend(arr_,{milstnid:milstnid},{mode:"deletedata"},{dept:dept});
+            $.post("{% url 'listtemplate_task'%}",arr_,
+            function(response){
+                load_data(response.tasklist)
+            })
+        }
+        else
+        {
+            var arr_ = {};
+            $.extend(arr_,{tskid:tskid},{milstnid:milstnid},{mode:"deletedata"},{dept:dept});
+            $.post("{% url 'listtemplate_task'%}",arr_,
+            function(response){
+                load_data(response.tasklist)
+            })
+        }    
+    }
+})
+</script>
+{% endblock %}

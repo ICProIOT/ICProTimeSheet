@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Projects summary {% endblock %}
+{% block validation_active %}active{% endblock %}
+
+{% block main-content %}
+
+<style> 
+    article.h-accordion {
+        display: flex;
+        width: 100%;
+        margin: 0 auto;
+        overflow: auto;
+        text-indent: 1em;
+    }
+
+    article.h-accordion section {
+        position: relative;
+        display: block;
+        float: left;
+        color: transparent;
+        background-color: transparent;
+        overflow: hidden;
+        border-radius: 3px;
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 0%;
+    }
+    .initial {
+        display: none;
+    }
+    article.h-accordion section:target .initial {
+        display: flex;
+    }
+    article.h-accordion section:target {
+        padding: 0 1em;
+        color: #333030;
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 100%;
+    }
+    article.h-accordion section{
+        -webkit-transition: all 1s ease;
+        -moz-transition: all 1s ease;
+        -ms-transition: all 1s ease;
+        -o-transition: all 1s ease;
+        transition: all 1s ease;
+    }
+    th {
+        white-space: nowrap;
+    }
+</style>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between">
+        <div class="col-4">
+            <i class="fas fa-table mt-1 me-1"></i><strong id="headtext"></strong>
+        </div>
+        <div class="col-8 d-flex justify-content-end align-items-center">
+            <div>
+                <button class="form-control border-0 left_arrow" type="button" ><i class="fas fa-angle-left"></i></button> 
+            </div>
+            <h5 id="fromdate" class="mb-0"></h5>
+            <span class="mx-3">-</span>
+            <h5 id="todate" class="mb-0"></h5>
+            <div>
+                <button class="form-control border-0 right_arrow " type="button" ><i class="fas fa-angle-right"></i></button> 
+            </div>                                
+        </div>
+    </div>
+    <div class="col-2 mt-2 ms-4">
+        <input class="form-control" id="searchinput" type="text" placeholder="Search..">
+    </div>
+    <div class="card-body table-responsive">
+        <article class="h-accordion" id="how">
+            <div style="width:100%" class="table-responsive">
+                <table id="summarytbl" class="table table-sm table-striped table-bordered table-hover">
+                    <thead >
+                        <th class="fw-bold">#</th>
+                        <th class="fw-bold">Name</th>
+                        <th class="fw-bold">Status</th>
+                        <th class="fw-bold">Hours</th>
+                        <th class="fw-bold">Accept</th>
+                        <th class="fw-bold">Reject</th>
+                        <th class="fw-bold">View</th>
+                    </thead>
+                </table>
+                <P id="footerMessage"> </P>
+            </div>
+            <section id="acc1">
+                <div class="initial table-responsive">
+                    <table id="employeetbl" class="table table-sm table-hover">
+                        <thead>
+                            <th class="fw-bold">Projects</th>
+                            <th class="fw-bold">Hours</th>
+                        </thead>
+                    </table>
+                </div>
+            </section>
+        </article>
+    </div>
+</div>
+    
+<!-- detailed_view model -->
+<div class="modal fade" id="detailed_view_model" tabindex="-1" aria-labelledby="detailed_view_model" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" >
+        <div class="modal-content">
+            <div class="modal-header">
+                <!-- <h5 class="modal-title" id="exampleModalLabel">Project Detailed view</h5> -->
+                <h5 class="modal-title " id="leftheading"  ></h5>
+                <h5 class="modal-title col-6 d-flex justify-content-end align-items-center" id="rightheading" style="text-align: left;"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table id="detailed_view_tbl" class="table table-sm table-striped table-hover" >
+                    </table>
+                </div>
+            </div>            
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready( function () {
+        $.ajax({
+            url: "{% url 'get_summary_template' %}",
+            success: function(json) {
+                load_data(json)
+            },
+            dataType: "json"
+        });
+        function ajax_post(data)
+        {
+            $.ajax({
+                url: "{% url 'get_summary_template' %}",
+                type:'POST',
+                data:data,
+                success: function(json) {
+                    load_data(json)
+                }
+            })
+        }
+        
+        //right arrow
+        $('.right_arrow').on("click",function(){
+            var fromdate_ = $("#fromdate").text();
+            ajax_post({fromdate_:fromdate_,mode:"postdate"})
+        })
+
+        //left arrow
+        $('.left_arrow').on("click",function(){
+            var fromdate_ = $("#fromdate").text();
+            ajax_post({fromdate_:fromdate_,mode:"predate"})
+        })
+    });
+    function load_data(json){
+        $('#detailed_view_tbl').append(k); 
+        $('#summarytbl tr').not(function(){ return !!$(this).has('th').length; }).remove();
+        var k='<tbody>'
+        if(json.tabledata.length!=0) 
+        {
+            $.each(json.tabledata, function(i, val){
+                k+=''
+                k+='<tr class="row_selected" emp_id='+val['id']+' tabindex='+i+'>'
+                    k+='<td style="width:5dvh">'+(i+1)+ '</td>'
+                    k+='<td class="viewproj_list"><a class="closedown text-info" href="#how">'+val['first_name']+'</a></td> '
+                    k+=val['submission_status'] == "NotSubmitted"?`<td style="width:5dvh" class="status text-warning">`+val['submission_status']+`</td>`:
+                        val['submission_status'] == "Accepted"?`<td style="width:5dvh" class="status text-success">`+val['submission_status']+`</td>`:
+                        val['submission_status'] == "Rejected"?`<td style="width:5dvh" class="status text-danger">`+val['submission_status']+`</td>`:
+                                    `<td style="width:5dvh" class="status text-primary">`+val['submission_status']+`</td>`
+                    k+= '<td style="width:5dvh">'+val['Week_hours']+ '</td>'
+                    k+=`<td style="width:5dvh" class="text-center"><i class="fa fa-check accept text-success" aria-hidden="true"></i></td>
+                    <td style="width:5dvh" class="text-center"><i class="fa fa-ban reject text-warning" aria-hidden="true"></i></td>
+                    <td style="width:5dvh" class="text-center"><i class="fa fa-eye detailed_proj_list text-info" data-bs-toggle="modal" data-bs-target="#detailed_view_model" aria-hidden="true"></i></td></tr>'`
+            })
+        }
+        else
+        { 
+            k+='<tr><td colspan="6" class="text-center text-info text-uppercase">No submission found</td></tr>'
+        }
+        k+='</tbody>'
+        $('#summarytbl').append(k); 
+        $('#headtext').text('Projects Summary Log Week : '+json.weeknum)
+        $('#fromdate').text(json.week_start_date)
+        $('#todate').text(json.week_end_date)
+    }
+     // Search text input
+     $("#searchinput").on("keyup", function() {
+            var value = $(this).val().toLowerCase();
+            var filteredCount = 0;
+            var totalCount = $('#summarytbl tbody tr').length;
+            $('#summarytbl tbody tr').each(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+             if ($(this).is(":visible")) {
+                    filteredCount++;
+                }
+            });
+            $('#footerMessage').html('Filtered ' + filteredCount + ' out of ' + totalCount + ' items.');
+        });
+    //detailed view
+    $(document).on('click', '.detailed_proj_list', function(){
+        var empl_id = $(this).closest('tr').attr('emp_id');
+        var fromdate_ = $("#fromdate").text();
+        var empname =  $(this).closest("tr").find(".closedown").html();
+        $("#leftheading").html("Project Detailed view of "+empname)
+        $.ajax({
+            url: "{% url 'get_summary_template' %}",
+            data:{empl_id:empl_id,fromdate_:fromdate_,mode:"detailed_view"},
+            type:'POST',
+            success: function(json) {
+                $('#detailed_view_tbl').empty();
+                $('#rightheading').text(" Reporting to:"+json.reporting_to);
+                var h='<thead>'
+                $.each(json.week_days, function(i, val){
+                    h+='<th>'+val+'</th>'
+                })
+                h+='</thead>'
+                $('#detailed_view_tbl').append(h);
+                var k='<tbody class="">'
+                $.each(json.emp_deailed_data, function(i, val){
+                    k+='<tr ><td ><h6>' + val[0]+'</h6>\n' + val[1] + '</td><td>'+val[2]+'</td><td>'+val[3]+'</td><td>'+val[4]+'</td><td>'
+                        +val[5]+'</td><td>'+val[6]+'</td><td>'+val[7]+'</td><td>'+val[8]+'</td></tr>'
+                })
+                k+='</tbody>'
+                $('#detailed_view_tbl').append(k);  
+            },
+            dataType: "json"
+        });
+    });
+            
+    // accept
+    $(document).on('click', '.accept', function(){
+        var empl_id = $(this).closest('tr').attr('emp_id');
+        var fromdate_ = $("#fromdate").text();
+        var empname =  $(this).closest("tr").find(".closedown").html();
+        if($(this).closest("tr").find(".status").html() != "NotSubmitted"){
+            $.ajax({
+                url: "{% url 'get_summary_template' %}",
+                data:{empl_id:empl_id,fromdate_:fromdate_,mode:"accept"},
+                type:'POST',
+                success: function(json) {
+                    alert(empname+"'s submitted hours during "+json.week_start_date+" to "+json.week_end_date+"th Accepted Successfully ...");
+                },
+                dataType: "json"
+            });
+        }
+        else{ 
+        alert("Sorry!!.. can't accept because timesheet not submitted.")
+        }
+    })
+//reject
+$(document).on('click', '.reject', function(){
+        var empl_id = $(this).closest('tr').attr('emp_id');
+        var fromdate_ = $("#fromdate").text();
+        var empname =  $(this).closest("tr").find(".closedown").html();
+        if($(this).closest("tr").find(".status").html() != "NotSubmitted"){
+            if (confirm('Do you want to reject '+ empname+'\'s Submitted timesheet?')) {
+                $.ajax({
+                    url: "{% url 'get_summary_template' %}",
+                    data:{empl_id:empl_id,fromdate_:fromdate_},
+                    type:'POST',
+                    success: function(json) {
+                        load_data(json)
+                    },
+                    dataType: "json"
+                });
+            }
+        }
+        else
+        {
+        alert("Sorry!!.. can't reject because timesheet not submitted.")
+        }
+    })
+    //view 
+    $(document).on('click', '.viewproj_list', function(){
+        var empl_id = $(this).closest('tr').attr('emp_id');
+        var fromdate_ = $("#fromdate").text();
+        $('.closedown').toggleClass('open').attr('href', function(_, currHref) {
+            if (currHref === '#how')
+            {
+                $.ajax({
+                    url: "{% url 'get_summary_template' %}",
+                    data:{empl_id:empl_id,fromdate_:fromdate_,mode:"view_projectlist"},
+                    type:'POST',
+                    success: function(json) {
+                        $('#employeetbl tr').not(function(){ return !!$(this).has('th').length; }).remove();
+                        var k='<tbody class="">'
+                        $.each(json.empweek_hrs, function(i, val){
+                            k+='<tr><td ><h6>' + val['task_id__pid__name'] + '</h6> \n ' + val['task_id__mid__name'] + ' : ' + val['task_id__name'] + '</td><td class="fw-bold">'+val['Week_hours']+'</td></tr>'
+                        })
+                        k+='</tbody>'
+                        $('#employeetbl').append(k); 
+                    },
+                    dataType: "json"
+                });
+                return '#acc1'
+            }
+            else
+            {
+                return '#how'
+            }    
+        });
+    });
+
+    
+</script>
+
+{% endblock %}

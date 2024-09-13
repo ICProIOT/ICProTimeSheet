@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+{% block title %}Checklists {% endblock %}
+{% block Head %}
+<style>
+    table tr td:nth-of-type(2) { /* Select the 2rd td */
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+{% block main-content %}
+
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between">
+                <div><i class="fas fa-table"></i> <strong>Checklists</strong></div>
+              
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'success'%}
+                            <div class="alert alert-warning alert-dismissible fade show  py-0 px-1 my-0 mx-1" role="alert" >
+                                <strong>{{message}}</strong>
+                                <button type="button" class="close" data-dismiss="alert" id="close_alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% elif message.tags == 'error'%}
+                            <div class="alert alert-warning alert-dismissible fade show py-0 px-1 my-0 mx-1" role="alert" >
+                                <strong>{{message}}</strong>
+                                <button type="button" class="close" data-dismiss="alert" id="close_alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <!-- <div class="alert-danger">{{message}}</div> -->
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                {% if user.groups.all.0.name == 'Admin' %}
+                <span style="float: right; "><a href=""data-bs-toggle="modal" data-bs-target="#Add_checklist_Modal" style="color:rgb(9, 139, 172);">+ Add Checklist</a> </span>
+                {% endif %}  
+                
+            </div>
+            <div class="card-body">
+                <table  class="dataTable display nowrap compact cell-border" style="width: 100%;">
+                    <thead >
+                        <th></th>
+                        <th>Checklist Name</th>
+                        <th>Remarks</th>
+                        {% if user.groups.all.0.name == 'Admin' %}
+                            <th style="text-align: center;">Edit</th>
+                            <th style="text-align: center;">Delete</th>
+                        {% endif %}
+                        
+                    </thead>
+                    <tbody> 
+                        {% for checklist_item in checklist %}
+                            <tr id={{checklist_item.id}}>
+                                <td>{{forloop.counter}}</td>
+                                <td>
+                                {% if user.groups.all.0.name == 'Admin' %}
+                                <a style="color:rgb(9, 139, 172)" href="/projects/checklist/{{checklist_item.id}}">
+                                {% endif %}
+                                {{checklist_item.name}}
+                                {% if user.groups.all.0.name == 'Admin' %}</a>{% endif %}
+                                </td>          
+                                <td>{{checklist_item.remarks}}</td>
+                                {% if user.groups.all.0.name == 'Admin' %}
+                                <td style="text-align: center;"><a href=""data-bs-toggle="modal" data-bs-target="#Edit_checklist_Modal" ><i class="edit-checklist fas fa-edit"></i></a></td>
+                                <td style="text-align: center;"><a href="/projects/delete-checklist/{{checklist_item.id}}/" id="delete_checklist" onclick="return confirm('Delete {{checklist_item.name}} ? ')" ><i class="fas fa-trash" style="color: red;"></i></a></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>   
+</div>
+
+<!--Add Checklist Modal -->
+<div class="modal fade" id="Add_checklist_Modal" tabindex="-1" aria-labelledby="Add_checklist_Modal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+      <div class="modal-content">
+            <div class="modal-header sb-sidenav-dark">
+                <h5 class="modal-title" id="exampleModalLabel" style="color: honeydew;">Add Checklist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/projects/create-checklist/" id="checklist-form" method="POST" autocomplete="off">
+                    {% csrf_token %}
+                    <!--Checklist name-->
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="form-outline">
+                                <input type="text" class="form-control"  id="clname" name="clname" value="{{form.name.value|safe}}" required>
+                                <label class="form-label" for="name">Checklist Name</label>
+                            </div>
+                        </div>  
+                    </div>  
+                    <!--Remarks,department-->
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="form-outline">
+                                <textarea type="text" class="form-control" id="clremarks" name="clremarks" value="{{form.remarks.value|safe}}" rows='2' cols='10' required> </textarea>
+                                <label class="form-label" for="pid">Remarks</label>
+                            </div>
+                        </div>
+                    </div>
+                   
+                    <!-- submit -->
+                    <div class="justify-content-around mb-3 row">  
+                        <div class="col-6 col-md-6 col-lg-6 " >
+                            <button type="submit" class="form-control" style="background-color: #41A8B9;">SAVE</button> 
+                        </div>
+                    </div> 
+                </form>
+            </div>          
+        </div>
+    </div>
+</div>
+
+<!--Edit Checklist Modal -->
+<div class="modal fade" id="Edit_checklist_Modal" tabindex="-1" aria-labelledby="Edit_checklist_Modal" aria-hidden="true">
+    <div class="modal-dialog  modal-dialog-centered">
+      <div class="modal-content">
+            <div class="modal-header sb-sidenav-dark">
+                <h5 class="modal-title" id="exampleModalLabel" style="color: honeydew;">Edit Checklist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-checklist-form" method="POST" autocomplete="off">
+                    {% csrf_token %}
+                    <!--Checklist name-->
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="form-outline">
+                                <input type="text" class="form-control"  id="edit-clname" name="clname" value="{{form.name.value|safe}}" required>
+                                <label class="form-label" for="name">Checklist Name</label>
+                            </div>
+                        </div>  
+                    </div>  
+                    <!--Remarks,department-->
+                    <div class="justify-content-around row mb-3">
+                        <div class="col-12 col-md-6 col-lg-12">
+                            <div class="form-outline">
+                                <textarea type="text" class="form-control" id="edit-clremarks" name="clremarks" value="{{form.remarks.value|safe}}" rows='2' cols='10' required> </textarea>
+                                <label class="form-label" for="pid">Remarks</label>
+                            </div>
+                        </div>
+                    </div>
+                   
+                    <!-- submit -->
+                    <div class="justify-content-around mb-3 row">  
+                        <div class="col-6 col-md-6 col-lg-6 " >
+                            <button type="submit" name="edit-checklist" id="checklist-submit" class="form-control" style="background-color: #41A8B9;">SAVE</button> 
+                        </div>
+                    </div> 
+                </form>
+            </div>          
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        $('.alert').alert()
+        //$(".alert").alert('close')
+        var table = $('.dataTable').DataTable({
+        lengthMenu: [200,100,50,25,10],
+        "scrollX": true,
+        "columnDefs" : [
+                        { 
+                            className : "text-center",targets:[3,4],
+                        },
+                    ]
+        });
+         
+        $('#close_alert').click(function() {
+            $(".alert").alert('close')
+        });
+    
+    table.on('click','tr .edit-checklist',function(){
+                console.log("clicked....")
+                var question_id =  table.row($(this).closest('tr'));
+                var selected_row = $(this).closest('tr');
+                var row_id = selected_row.attr('id');
+                var checklist_name = table.row($(this).closest('tr')).data()[1];
+                checklist_name = $(checklist_name).text().trim();
+                $('#edit-clname').val(checklist_name)
+                var remarks = table.row($(this).closest('tr')).data()[2];
+                $('#edit-clremarks').val(remarks)
+                console.log(checklist_name,remarks,row_id,"row info")
+                $('#edit-checklist-form').attr('action',"/projects/edit-checklist/"+row_id.toString())
+             
+        });
+    });
+   
+</script> 
+
+<script>
+    $('#Edit_checklist_Modal').on('shown.bs.modal', function () {
+    var inputField = document.getElementById("edit-clname");
+    var section = inputField.value
+    
+    inputField.addEventListener('input', function() {
+        // Check if the value has changed
+        if (inputField.value.toLowerCase() !== section.toLowerCase()) {
+            // Perform validation for the changed value
+            document.getElementById("edit-checklist-form").addEventListener("submit", validateChecklistName);
+        }
+        else{
+            document.getElementById("edit-checklist-form").removeEventListener('submit',validateChecklistName);
+        }
+    });
+    });
+    // Function to validate section name
+    function validateChecklistName(event) {
+        event.preventDefault(); // Prevent the form from submitting automatically
+        var checklistName = event.target.elements.clname.value;
+
+        // Make an API request to check if the section name already exists
+        fetch("/projects/check-checklist-name", {
+            method: "POST",
+            body: JSON.stringify({ checklist_name: checklistName.toLowerCase() }),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                "Content-Type": "application/json",
+            },
+        })
+        .then(function(response) {
+            var data = response.json()
+            return data;
+        })
+        .then(function(data) {
+            if (data.status == "exists") {
+                // Section name already exists, show an error message or take appropriate action
+                alert("Checklist name already exists. Please choose a different name.");
+            } else {
+                // Section name is valid, proceed with form submission or take appropriate action
+                event.target.submit();
+            }
+        })
+        .catch(function(error) {
+            // Handle any error that occurred during the API request
+            console.error("Error:", error);
+        });
+    }
+    
+    // Attach the validateSectionName function to the form's submit event
+    document.getElementById("checklist-form").addEventListener("submit", validateChecklistName);
+
+</script>
+{% endblock %}

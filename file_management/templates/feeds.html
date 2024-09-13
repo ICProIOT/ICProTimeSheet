@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Feeds{% endblock %} 
+
+{% block main-content %}
+<div class="row mb-3">
+    <div class="col-xl-12">
+        <div class="card mb-3">
+            <div class="card-header">
+                <i class="fas fa-rss"></i><strong> Upload Notice</strong>
+            </div>
+            <div class="card-body">
+                <form action="/file_management/feeds/" enctype="multipart/form-data"  method="POST" autocomplete="off">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-12 col-md-4 col-lg-4 mb-3">
+                            <!-- <div class="form-outline mb-3">
+                                <input type="date" class="form-control" id="date" name="date" value="{{form.date.value|safe}}"  required>
+                                <label class="form-label" for="date">date</label>
+                            </div> -->
+                            <div class="form-outline mb-3">
+                                <input type="text" class="form-control" id="title" name="title" value="{{form.title.value|safe}}"  required>
+                                <label class="form-label" for="title">Title</label>
+                            </div>
+                            <div class="form-outline mb-3">
+                                <textarea class="form-control" id="Description" name="Description" value="{{form.Description.value|safe}}" rows="3" cols="10" required> </textarea>
+                                <label class="form-label" for="title">Description</label>
+                            </div>
+                            <div class="form-outline mb-3">
+                                <input type="file" name="file" id="photo" required="true" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-8 col-lg-8 mb-3">
+                            <div class="holder">
+                                <img id="imgPreview" src="#" alt="" style="max-width: 550px; max-height: 450px;"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 col-md-12 col-lg-12">
+                            <input type="submit" class="form-control" id="btn-submits" style="width: 100px;">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- table -->
+<div class="row mb-3">
+    <div class="col-xl-12">
+        <div class="card mb-3">
+            <div class="card-header">
+                <i class="fas fa-table"></i> <strong>Feeds</strong>
+            </div>
+            <div class="card-body">
+                <table class="dataTable  display nowrap compact cell-border" style="width: 100%;">
+                    <thead>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Decription</th>   
+                        <th>Date</th>                     
+                        <th>Delete</th>
+                    </thead>
+                    <tbody>
+                        {% for image in images%}
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td>{{image.title}}</td>
+                            <td>{{image.Description}}</td>
+                            <td>{{image.date}}</td>
+                            <td><a href="/file_management/delete-image/{{image.id}}" onclick="return confirm('Delete {{image.title}} ? ')"><i class="fa fa-trash" style="color: red;" aria-hidden="true"></i></a></td>
+                        </tr>
+                        {% endfor %}  
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(() => {
+        $("#photo").change(function () {
+            const file = this.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function (event) {
+                    $("#imgPreview")
+                    .attr("src", event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    $(document).ready( function () {
+    var table = $('.dataTable').DataTable({
+        lengthMenu: [5,10],
+        "columnDefs" : [ {  className : "text-center",targets:[0,2,3]},] ,
+        });
+    
+});  
+</script>
+
+<!-- Referance Ajax -->
+<script type="text/javascript">
+    //      $(document).on('submit','#Timesheet_Submit_Form',function(e){
+    //     e.preventDefault();
+    //     var Submit_Form = $("#Timesheet_Submit_Form")
+    //     $.ajax({
+    //         url:"{% url 'submission' %}",
+    //         type:'POST',
+    //         data :Submit_Form.serialize(),
+    //         dataType:"json",
+    //         headers:{'X-CSRFToken':'{% csrf_token%}'},
+    //         success:function(response){
+    //             var success = response['success']
+    //             if(success){
+    //                 alert("Form Valid  and Sabmitted successfully ....");
+
+    //                 $('#datatablesSimple').DataTable().ajax.reload();
+
+    //             }else{
+    //                 alert("Got Form Errorr!!");
+    //             }
+    //         },
+    //         failure:function (error){
+    //             alert(" Error occured while calling Django View...");
+    //         }
+    //     })
+    //  });
+</script>
+{% endblock %}

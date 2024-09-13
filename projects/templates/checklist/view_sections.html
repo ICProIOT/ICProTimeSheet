@@ -1,0 +1,69 @@
+{% extends "checklist/checklist_base.html" %}
+{% block sections_view %}
+    <div class="list-group list-group-flush"> 
+        {% for section in checklist.section.all %}
+            <a href="{{section.id}}" class="list-group-item px-0 py-1"><i class="bx-folder "></i><span>{{section.name|title}}</span></a>
+        {% endfor%}
+    </div>
+{% endblock %}
+{% block question_view %}
+                            <table class="table table-hover table-sm mb-0">
+                                <tbody>
+                                    
+                                        {% for question in questions %}
+                                            <tr>
+                                                <td>
+                                                    <!--Section: Contact v.2-->
+                                                    <section class=" mb-2">
+
+                                                        <!--Section heading-->
+                                                        <h5 class="h1-responsive font-weight-bold ">{{question.question|capfirst}}</h5>
+                                                        <div>
+                                                        <a href=""data-bs-toggle="modal" data-bs-target="#Edit_Question_Modal" ><i class="edit-question fas fa-edit"></i></a>
+                                                        <a href="/projects/delete-project/{{project.id}}" onclick="return confirm('Delete {{project.name}} ? ')"><i class="fas fa-trash" style="color: red;"></i></a>
+                                                        </div>
+
+                                                        <div class="row">
+
+                                                            <!--Grid column-->
+                                                            <div class="col-md-9 mb-md-0 mb-2">
+                                                                <form id="question-form" name="question-form" action="mail.php" method="POST">
+                                                                    <!--Grid row-->
+                                                                    <div class="row">
+                                                                        <!--Grid column-->
+                                                                        <div class="col-md-6">
+                                                                            <div class="md-form mb-0">
+                                                                                {% if question.type == 'text'%}
+                                                                                <div class="md-form mb-2">
+                                                                                    <input type="{{question.type}}" id="s{{section.id}}-q{{question.id}}-o{{option.id}}" name="{{option.option}}" value="{{option.option}}">
+                                                                    
+                                                                                </div>
+                                                                                {% else %}
+                                                                                <div class="md-form mb-2">
+                                                                                    {% for option in question.options.all %}
+                                                                                        <input type="{{question.type}}" id="s{{section.id}}-q{{question.id}}-o{{option.id}}" name="{{option.option}}" value="{{option.option}}">
+                                                                                        <label for="html">{{option.option}}</label><br>
+                                                                                    {% endfor%}
+                                                                                </div>
+                                                                                {% endif %}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </form>
+                                                                <div class="text-md-left">
+                                                                    <a class="btn btn-primary" onclick="document.getElementById('contact-form').submit();">Save</a>
+                                                                </div>
+                                                                <div class="status"></div>
+                                                            </div>
+                                                            <!--Grid column-->
+                                                        </div>
+
+                                                    </section>
+                                                    <!--Section: Contact v.2-->
+                                                </td>
+                                            </tr>
+                                     
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+{% endblock %}
